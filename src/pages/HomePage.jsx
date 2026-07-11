@@ -95,7 +95,7 @@ export default function HomePage({ navigate }) {
       <section className="section image-story">
         <img src="/assets/images/mechanics-motion.jpg" alt="Механика и движение" />
         <div>
-          <p className="eyebrow">Физика вокруг нас</p>
+          <p className="eyebrow">Физика вокруг нас 🚀</p>
           <h2>От падающего яблока до света далёких звёзд</h2>
           <p className="lead small">
             Меняй массу, скорость, температуру и заряд. Здесь формулы превращаются
