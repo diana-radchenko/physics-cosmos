@@ -1,0 +1,151 @@
+import { useState } from "react";
+import ReactMarkdown from "react-markdown";
+import remarkGfm from "remark-gfm";
+
+const suggestions = [
+  "Объясни закон сохранения энергии",
+  "Как рассчитать траекторию броска?",
+  "Что показывает закон Ома?",
+  "Как работает закон Гука?",
+];
+
+export default function AiPage() {
+  const [messages, setMessages] = useState([
+    {
+      from: "ai",
+      text: "Привет! Я AI-помощник по физике. Задай мне вопрос — разберёмся вместе 🚀",
+    },
+  ]);
+
+  const [value, setValue] = useState("");
+  const [loading, setLoading] = useState(false);
+
+  const ask = async (question = value) => {
+    const cleanQuestion = question.trim();
+
+    if (!cleanQuestion || loading) return;
+
+    const nextMessages = [
+      ...messages,
+      { from: "user", text: cleanQuestion },
+    ];
+
+    setMessages(nextMessages);
+    setValue("");
+    setLoading(true);
+
+    try {
+      const response = await fetch("/api/ai", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          messages: nextMessages,
+        }),
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data.error || "Не удалось получить ответ AI.");
+      }
+
+      setMessages((current) => [
+        ...current,
+        {
+          from: "ai",
+          text: data.answer,
+        },
+      ]);
+    } catch (error) {
+      setMessages((current) => [
+        ...current,
+        {
+          from: "ai",
+          error: true,
+          text: error.message || "Не удалось получить ответ AI.",
+        },
+      ]);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  return (
+    <section className="section page-section narrow-page">
+      <div className="section-heading">
+        <p className="eyebrow">Персональный учитель</p>
+        <h1>Спроси у AI</h1>
+        <p>Получи понятное объяснение без сложных слов.</p>
+      </div>
+
+      <div className="chat-window ai-window">
+        <div className="chat-title">
+          <span>✦</span>
+          <div>
+            <strong>AI Помощник</strong>
+            <small>Всегда на связи</small>
+          </div>
+        </div>
+
+        <div className="messages">
+          {messages.map((message, index) => (
+            <div
+              key={index}
+              className={`message ${message.from} ${
+                message.error ? "message-error" : ""
+              }`}
+            >
+              <ReactMarkdown remarkPlugins={[remarkGfm]}>
+                {message.text}
+              </ReactMarkdown>
+            </div>
+          ))}
+
+          {loading && (
+            <div className="message ai thinking-message">
+              <span />
+              <span />
+              <span /> Думаю над ответом…
+            </div>
+          )}
+        </div>
+
+        <div className="suggestion-row">
+          {suggestions.map((item) => (
+            <button
+              key={item}
+              disabled={loading}
+              onClick={() => ask(item)}
+            >
+              {item}
+            </button>
+          ))}
+        </div>
+
+        <form
+          className="chat-input"
+          onSubmit={(event) => {
+            event.preventDefault();
+            ask();
+          }}
+        >
+          <input
+            disabled={loading}
+            value={value}
+            onChange={(event) => setValue(event.target.value)}
+            placeholder="Задай любой вопрос по физике..."
+          />
+
+          <button
+            className="primary-button"
+            disabled={loading || !value.trim()}
+          >
+            {loading ? "Отвечаю…" : "Отправить"}
+          </button>
+        </form>
+      </div>
+    </section>
+  );
+}
