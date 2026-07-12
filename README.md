@@ -1,69 +1,37 @@
-# ФизикаКосмос — редактируемый React-проект
+Physics-Cosmos AI-Powered Interactive Physics Learning Platform
 
-## Быстрый запуск
+Physics-Cosmos is an educational web platform designed to improve physics education through interactive simulations, artificial intelligence, and visual learning.
 
-1. Распакуйте ZIP-файл.
-2. Откройте полученную папку в Visual Studio Code.
-3. Дважды нажмите `start.bat`.
-4. Сайт откроется по адресу `http://localhost:3000`.
+The project helps students understand complex physical concepts by allowing them to explore, experiment, and receive AI-guided explanations instead of relying only on traditional textbooks.
 
-При первом запуске проект установит библиотеки React и Vite. Для этого один раз
-понадобится интернет. После установки запуск выполняется локально.
+Why Physics-Cosmos?
 
-Другой вариант из терминала Visual Studio Code:
+Traditional physics education often lacks visualization and interactivity. Physics-Cosmos addresses this challenge by combining:
 
-```text
-npm install
-npm run dev
-```
+Interactive Physics Simulations
+AI Physics Tutor
+Physics Theory & Formulas
+Simulation Builder
+Collaborative Learning Students learn by exploring real physical phenomena rather than memorizing formulas.
+Target Audience
 
-## Структура
+Middle & High School Students
+College Students
+Physics Teachers
+STEM Enthusiasts
+Technologies
 
-- `index.html` — входная страница;
-- `src/App.jsx` — навигация и подключение страниц;
-- `src/components` — шапка, окно входа, фон и физические симуляции;
-- `src/pages` — отдельный файл для каждой вкладки;
-- `src/data/physics.js` — темы, теория, формулы и вопросы;
-- `src/styles.css` — всё оформление и адаптивность;
-- `public/assets/images` — изображения, которые попадут в опубликованный сайт;
-- `server/openai.js` — безопасный запрос к OpenAI;
-- `functions/api/ai.js` — серверная функция для Cloudflare Pages;
-- `start.bat` — запуск в Windows.
+React
+Vite
+JavaScript
+OpenAI API
+Cloudflare Pages
+Educational Mission
 
-Проект содержит все внутренние вкладки:
-главную, физику, темы и симуляции, конструктор симуляций, AI, общий чат, чат с
-друзьями, добавление друзей, вход, регистрацию и раздел «Обо мне».
+My goal is to make physics more visual, interactive, and accessible for learners worldwide through modern technology and AI.
 
-Тексты можно менять в файлах страниц и `src/data/physics.js`, цвета — в начале
-`src/styles.css`. Формы входа и чаты сохраняют данные только локально в браузере.
+Author
 
-## Подключение настоящего AI
+Diana Radchenko
 
-1. Создайте API-ключ OpenAI.
-2. Скопируйте `.env.example` в новый файл `.env.local`.
-3. Впишите ключ только в `.env.local`:
-
-```text
-OPENAI_API_KEY=ваш_ключ
-OPENAI_MODEL=gpt-5.4-mini
-```
-
-4. Перезапустите `npm run dev`.
-
-Никогда не вставляйте ключ в `src`, не отправляйте его в чат и не публикуйте
-`.env.local`. Клиентская страница обращается к `/api/ai`, а ключ используется
-только на сервере.
-
-## Публикация AI-версии в Cloudflare Pages
-
-Обычная загрузка ZIP публикует только статические файлы и не запускает AI-функцию.
-Для полной версии используйте терминал:
-
-```text
-npx wrangler login
-npm run deploy
-```
-
-После создания проекта добавьте секрет `OPENAI_API_KEY` в настройках Cloudflare
-Pages или командой `wrangler pages secret put`. Затем выполните `npm run deploy`
-ещё раз.
+Student Research Project • 2026
