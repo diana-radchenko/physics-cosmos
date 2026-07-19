@@ -1,5 +1,3 @@
-README.md
-
 Physics Cosmos
 
 An interactive web platform for learning physics through real-time simulations, animated visualizations, and an AI tutor — all running in the browser.
