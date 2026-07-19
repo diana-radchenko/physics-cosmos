@@ -1,5 +1,7 @@
 README.md
+
 Physics Cosmos
+
 An interactive web platform for learning physics through real-time simulations, animated visualizations, and an AI tutor — all running in the browser.
 
 Physics Cosmos turns abstract laws (gravity, collisions, optics, electric fields) into things students can see and manipulate directly, instead of memorizing formulas from a textbook. It was built as an independent software-engineering project, from concept to a deployed web application.
