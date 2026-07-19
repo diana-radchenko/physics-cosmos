@@ -18,8 +18,8 @@ Middle & High School Students
 College Students
 Physics Teachers
 STEM Enthusiasts
-Technologies
 
+Technologies: 
 React
 Vite
 JavaScript
