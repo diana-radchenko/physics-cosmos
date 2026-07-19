@@ -7,14 +7,13 @@ The project helps students understand complex physical concepts by allowing them
 Why Physics-Cosmos?
 
 Traditional physics education often lacks visualization and interactivity. Physics-Cosmos addresses this challenge by combining:
-
 Interactive Physics Simulations
 AI Physics Tutor
 Physics Theory & Formulas
 Simulation Builder
 Collaborative Learning Students learn by exploring real physical phenomena rather than memorizing formulas.
-Target Audience
 
+Target Audience
 Middle & High School Students
 College Students
 Physics Teachers
