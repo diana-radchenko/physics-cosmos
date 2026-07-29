@@ -195,10 +195,10 @@ function getResults(type, values) {
       return ["m не определена: F и a должны иметь одинаковый знак, a ≠ 0", "Связь величин: F = m · a"];
     }
     const calculated = values.solveFor === "force"
-      ? `F = m · a = ${formatNumber(values.force)} Н`
+      ? `Результат: F = m · a = ${formatNumber(values.mass)} кг · ${formatNumber(values.acceleration)} м/с² = ${formatNumber(values.force)} Н`
       : values.solveFor === "mass"
-        ? `m = F / a = ${formatNumber(values.mass)} кг`
-        : `a = F / m = ${formatNumber(values.acceleration)} м/с²`;
+        ? `Результат: m = F / a = ${formatNumber(values.force)} Н / ${formatNumber(values.acceleration)} м/с² = ${formatNumber(values.mass)} кг`
+        : `Результат: a = F / m = ${formatNumber(values.force)} Н / ${formatNumber(values.mass)} кг = ${formatNumber(values.acceleration)} м/с²`;
     return [calculated, "Связь величин: F = m · a"];
   }
   if (type === "optics") {
@@ -697,7 +697,7 @@ export default function PhysicsCanvas({ type, color }) {
       <div className="simulation-readout" aria-live="polite">
         {results.map((result) => <span key={result}>{result}</span>)}
       </div>
-      <div className="canvas-controls">
+      <div className={type === "newton" ? "canvas-controls newton-controls" : "canvas-controls"}>
         <div className="canvas-control-grid">
           {config.controls.map((control) => (
             <label key={control.key}>
