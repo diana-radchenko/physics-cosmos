@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { physicsTopics } from "../data/physics";
 import PhysicsCanvas from "../components/PhysicsCanvas";
+import { refractedAngle } from "../physics/calculations";
 
 const newtonQuizzes = {
   acceleration: {
@@ -20,14 +21,72 @@ const newtonQuizzes = {
   },
 };
 
+const opticalMediaNames = {
+  1: "воздуха",
+  1.31: "льда",
+  1.33: "воды",
+  1.5: "стекла",
+  2.42: "алмаза",
+};
+
+function getOpticsQuiz({ n1, n2, angle }) {
+  const from = opticalMediaNames[n1];
+  const to = opticalMediaNames[n2];
+  const theta2 = refractedAngle(n1, n2, angle);
+  const answers = [
+    "Возникает полное внутреннее отражение",
+    "Луч поворачивает ближе к перпендикуляру",
+    "Луч отклоняется дальше от перпендикуляра",
+    "Направление луча не изменяется",
+  ];
+
+  if (theta2 === null) {
+    return {
+      question: `Что произойдёт со светом при переходе из ${from} в ${to} под углом ${angle}°?`,
+      answers,
+      correct: 0,
+    };
+  }
+  if (n2 > n1) {
+    return {
+      question: `Как изменится направление света при переходе из ${from} в ${to}?`,
+      answers,
+      correct: 1,
+    };
+  }
+  if (n2 < n1) {
+    return {
+      question: `Как изменится направление света при переходе из ${from} в ${to} под углом ${angle}°?`,
+      answers,
+      correct: 2,
+    };
+  }
+  return {
+    question: `Как изменится направление света, если для обеих сред n₁ = n₂ = ${n1.toFixed(2)}?`,
+    answers,
+    correct: 3,
+  };
+}
+
 function TopicCard({ topic, open, onToggle }) {
   const [answer, setAnswer] = useState(null);
   const [checked, setChecked] = useState(false);
   const [newtonSolveFor, setNewtonSolveFor] = useState("acceleration");
-  const quiz = topic.id === "newton" ? newtonQuizzes[newtonSolveFor] : topic;
+  const [opticsValues, setOpticsValues] = useState({ n1: 1, n2: 1.33, angle: 35 });
+  const quiz = topic.id === "newton"
+    ? newtonQuizzes[newtonSolveFor]
+    : topic.id === "optics"
+      ? getOpticsQuiz(opticsValues)
+      : topic;
 
   const changeNewtonSolveFor = (solveFor) => {
     setNewtonSolveFor(solveFor);
+    setAnswer(null);
+    setChecked(false);
+  };
+
+  const changeOpticsValues = (values) => {
+    setOpticsValues(values);
     setAnswer(null);
     setChecked(false);
   };
@@ -58,6 +117,7 @@ function TopicCard({ topic, open, onToggle }) {
             type={topic.id}
             color={topic.color}
             onNewtonSolveForChange={changeNewtonSolveFor}
+            onOpticsChange={changeOpticsValues}
           />
           <section className="quiz">
             <h3>🎯 Проверь себя</h3>
