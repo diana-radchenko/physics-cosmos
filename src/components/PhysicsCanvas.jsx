@@ -194,12 +194,7 @@ function getResults(type, values) {
     if (values.solveFor === "mass" && values.mass === null) {
       return ["m не определена: F и a должны иметь одинаковый знак, a ≠ 0", "Связь величин: F = m · a"];
     }
-    const calculated = values.solveFor === "force"
-      ? `Результат: F = m · a = ${formatNumber(values.mass)} кг · ${formatNumber(values.acceleration)} м/с² = ${formatNumber(values.force)} Н`
-      : values.solveFor === "mass"
-        ? `Результат: m = F / a = ${formatNumber(values.force)} Н / ${formatNumber(values.acceleration)} м/с² = ${formatNumber(values.mass)} кг`
-        : `Результат: a = F / m = ${formatNumber(values.force)} Н / ${formatNumber(values.mass)} кг = ${formatNumber(values.acceleration)} м/с²`;
-    return [calculated, "Связь величин: F = m · a"];
+    return ["Связь величин: F = m · a"];
   }
   if (type === "optics") {
     const theta2 = refractedAngle(values.n1, values.n2, values.angle);
