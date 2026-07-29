@@ -1,10 +1,13 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import {
+  advanceNewtonMotion,
   collisionResult,
   coulombForce,
   gravityForce,
   hookeMetrics,
   newtonAcceleration,
+  newtonForce,
+  newtonMass,
   ohmCurrent,
   pendulumPeriod,
   projectileMetrics,
@@ -17,10 +20,16 @@ const HEIGHT = 300;
 const simulationConfig = {
   newton: {
     controls: [
+      { key: "solveFor", label: "Рассчитать", type: "select", options: [
+        { value: "acceleration", label: "Ускорение a" },
+        { value: "force", label: "Силу F" },
+        { value: "mass", label: "Массу m" },
+      ] },
       { key: "force", label: "Сила F", min: -30, max: 30, step: 1, unit: "Н" },
       { key: "mass", label: "Масса m", min: 1, max: 20, step: 1, unit: "кг" },
+      { key: "acceleration", label: "Ускорение a", min: -15, max: 15, step: 0.1, unit: "м/с²" },
     ],
-    initial: { force: 10, mass: 5 },
+    initial: { solveFor: "acceleration", force: 10, mass: 5, acceleration: 2 },
   },
   optics: {
     controls: [
@@ -132,6 +141,17 @@ function chargeSign(value) {
   return "0";
 }
 
+function synchronizeNewton(values, solveFor = values.solveFor) {
+  const next = { ...values, solveFor };
+  if (solveFor === "force") {
+    return { ...next, force: newtonForce(next.mass ?? 1, next.acceleration) };
+  }
+  if (solveFor === "mass") {
+    return { ...next, mass: newtonMass(next.force, next.acceleration) };
+  }
+  return { ...next, acceleration: newtonAcceleration(next.force, next.mass ?? 1) };
+}
+
 function addArrowHead(context, x, y, angle, color, size = 8) {
   context.fillStyle = color;
   context.beginPath();
@@ -171,8 +191,15 @@ function drawGrid(context, width) {
 
 function getResults(type, values) {
   if (type === "newton") {
-    const acceleration = newtonAcceleration(values.force, values.mass);
-    return [`a = F / m = ${formatNumber(acceleration)} м/с²`, "Масса постоянна; сила определяет ускорение"];
+    if (values.solveFor === "mass" && values.mass === null) {
+      return ["m не определена: F и a должны иметь одинаковый знак, a ≠ 0", "Связь величин: F = m · a"];
+    }
+    const calculated = values.solveFor === "force"
+      ? `F = m · a = ${formatNumber(values.force)} Н`
+      : values.solveFor === "mass"
+        ? `m = F / a = ${formatNumber(values.mass)} кг`
+        : `a = F / m = ${formatNumber(values.acceleration)} м/с²`;
+    return [calculated, "Связь величин: F = m · a"];
   }
   if (type === "optics") {
     const theta2 = refractedAngle(values.n1, values.n2, values.angle);
@@ -228,7 +255,7 @@ function getResults(type, values) {
   return [];
 }
 
-function drawSimulation(context, width, type, color, values, time) {
+function drawSimulation(context, width, type, color, values, time, newtonMotion) {
   context.clearRect(0, 0, width, HEIGHT);
   context.fillStyle = "#080d24";
   context.fillRect(0, 0, width, HEIGHT);
@@ -240,15 +267,14 @@ function drawSimulation(context, width, type, color, values, time) {
   context.fillStyle = color;
 
   if (type === "newton") {
-    const massWidth = 48 + values.mass * 2.4;
-    const acceleration = newtonAcceleration(values.force, values.mass);
-    const usable = Math.max(1, width - massWidth - 100);
-    const x = 50 + (((time * acceleration * 18) % usable) + usable) % usable;
+    const displayMass = values.mass ?? 1;
+    const massWidth = 48 + displayMass * 2.4;
+    const x = newtonMotion?.position ?? 50;
     context.fillRect(x, 175, massWidth, 55);
     context.fillStyle = "#fff";
     context.font = "14px sans-serif";
     context.textAlign = "center";
-    context.fillText(`${values.mass} кг`, x + massWidth / 2, 208);
+    context.fillText(`${formatNumber(values.mass)} кг`, x + massWidth / 2, 208);
     const arrowLength = Math.min(120, Math.abs(values.force) * 4);
     if (values.force !== 0) {
       const start = values.force > 0 ? x + massWidth : x;
@@ -260,6 +286,11 @@ function drawSimulation(context, width, type, color, values, time) {
     context.moveTo(25, 232);
     context.lineTo(width - 25, 232);
     context.stroke();
+    context.fillStyle = "#fff";
+    context.textAlign = "left";
+    context.fillText(`a = ${formatNumber(values.acceleration)} м/с²`, 25, 265);
+    context.textAlign = "right";
+    context.fillText(`v = ${formatNumber(newtonMotion?.velocity ?? 0)} м/с`, width - 25, 265);
   } else if (type === "optics") {
     const boundaryY = 155;
     const centerX = width / 2;
@@ -573,6 +604,7 @@ export default function PhysicsCanvas({ type, color }) {
   const pausedRef = useRef(false);
   const timeRef = useRef(0);
   const previousFrameRef = useRef(null);
+  const newtonMotionRef = useRef({ position: 50, velocity: 0 });
   const config = simulationConfig[type] || simulationConfig.newton;
   const [values, setValues] = useState(config.initial);
   const [paused, setPaused] = useState(false);
@@ -581,6 +613,7 @@ export default function PhysicsCanvas({ type, color }) {
     const nextConfig = simulationConfig[type] || simulationConfig.newton;
     setValues(nextConfig.initial);
     timeRef.current = 0;
+    newtonMotionRef.current = { position: 50, velocity: 0 };
     previousFrameRef.current = null;
     pausedRef.current = false;
     setPaused(false);
@@ -609,8 +642,24 @@ export default function PhysicsCanvas({ type, color }) {
       const previous = previousFrameRef.current ?? timestamp;
       const delta = Math.min((timestamp - previous) / 1000, 0.05);
       previousFrameRef.current = timestamp;
-      if (!pausedRef.current) timeRef.current += delta;
-      drawSimulation(context, width, type, color, values, timeRef.current);
+      if (!pausedRef.current) {
+        timeRef.current += delta;
+        if (type === "newton" && values.mass !== null) {
+          const motion = newtonMotionRef.current;
+          const massWidth = 48 + values.mass * 2.4;
+          const minPosition = 50;
+          const maxPosition = Math.max(minPosition, width - massWidth - 50);
+          newtonMotionRef.current = advanceNewtonMotion(
+            motion.position,
+            motion.velocity,
+            values.acceleration,
+            delta,
+            minPosition,
+            maxPosition,
+          );
+        }
+      }
+      drawSimulation(context, width, type, color, values, timeRef.current, newtonMotionRef.current);
       frame = requestAnimationFrame(render);
     };
 
@@ -629,7 +678,17 @@ export default function PhysicsCanvas({ type, color }) {
   const reset = () => {
     setValues({ ...config.initial });
     timeRef.current = 0;
+    newtonMotionRef.current = { position: 50, velocity: 0 };
     setPaused(false);
+  };
+
+  const updateControl = (control, value) => {
+    setValues((current) => {
+      const next = { ...current, [control.key]: value };
+      if (type !== "newton") return next;
+      return synchronizeNewton(next, control.key === "solveFor" ? value : next.solveFor);
+    });
+    if (type !== "newton") timeRef.current = 0;
   };
 
   return (
@@ -651,8 +710,7 @@ export default function PhysicsCanvas({ type, color }) {
                   value={values[control.key]}
                   onChange={(event) => {
                     const option = control.options.find((item) => String(item.value) === event.target.value);
-                    setValues((current) => ({ ...current, [control.key]: option?.value ?? event.target.value }));
-                    timeRef.current = 0;
+                    updateControl(control, option?.value ?? event.target.value);
                   }}
                 >
                   {control.options.map((option) => <option key={String(option.value)} value={option.value}>{option.label}</option>)}
@@ -663,10 +721,10 @@ export default function PhysicsCanvas({ type, color }) {
                   min={control.min}
                   max={control.max}
                   step={control.step}
-                  value={values[control.key]}
+                  value={values[control.key] ?? control.min}
+                  disabled={type === "newton" && values.solveFor === control.key}
                   onChange={(event) => {
-                    setValues((current) => ({ ...current, [control.key]: Number(event.target.value) }));
-                    timeRef.current = 0;
+                    updateControl(control, Number(event.target.value));
                   }}
                 />
               )}
