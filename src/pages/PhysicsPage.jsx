@@ -18,7 +18,9 @@ function TopicCard({ topic, open, onToggle }) {
           <div className="theory-grid">
             <section className="glass-panel">
               <h3>📚 Теория</h3>
-              <p>{topic.theory}</p>
+              {topic.theory.split("\n\n").map((paragraph) => (
+                <p key={paragraph}>{paragraph}</p>
+              ))}
             </section>
             <section className="formula-panel">
               <span>Формула</span>
