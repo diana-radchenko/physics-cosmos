@@ -18,11 +18,11 @@ import {
 const HEIGHT = 300;
 
 const opticalMedia = [
-  { value: 1, label: "Воздух — n ≈ 1,00" },
-  { value: 1.33, label: "Вода — n ≈ 1,33" },
-  { value: 1.31, label: "Лёд — n ≈ 1,31" },
-  { value: 1.5, label: "Стекло — n ≈ 1,50" },
-  { value: 2.42, label: "Алмаз — n ≈ 2,42" },
+  { value: "air", n: 1, name: "Воздух", label: "Воздух — n ≈ 1,00" },
+  { value: "water", n: 1.33, name: "Вода", label: "Вода — n ≈ 1,33" },
+  { value: "ice", n: 1.31, name: "Лёд", label: "Лёд — n ≈ 1,31" },
+  { value: "glass", n: 1.5, name: "Стекло", label: "Стекло — n ≈ 1,50" },
+  { value: "diamond", n: 2.42, name: "Алмаз", label: "Алмаз — n ≈ 2,42" },
 ];
 
 const simulationConfig = {
@@ -41,11 +41,13 @@ const simulationConfig = {
   },
   optics: {
     controls: [
-      { key: "n1", label: "Первая среда n₁ (из неё выходит свет)", type: "select", options: opticalMedia },
-      { key: "n2", label: "Вторая среда n₂ (в неё входит свет)", type: "select", options: opticalMedia },
+      { key: "medium1", label: "Первая среда n₁ (из неё выходит свет)", type: "select", options: opticalMedia },
+      { key: "n1", label: "Значение n₁ от 1 до 10", min: 1, max: 10, step: 0.01 },
+      { key: "medium2", label: "Вторая среда n₂ (в неё входит свет)", type: "select", options: opticalMedia },
+      { key: "n2", label: "Значение n₂ от 1 до 10", min: 1, max: 10, step: 0.01 },
       { key: "angle", label: "Угол падения θ₁", min: 0, max: 80, step: 1, unit: "°" },
     ],
-    initial: { n1: 1, n2: 1.33, angle: 35 },
+    initial: { medium1: "air", n1: 1, medium2: "water", n2: 1.33, angle: 35 },
   },
   gravity: {
     controls: [
@@ -147,6 +149,12 @@ function chargeSign(value) {
   if (value > 0) return "+";
   if (value < 0) return "−";
   return "0";
+}
+
+function opticalMediumName(mediumKey, n) {
+  const selected = opticalMedia.find((medium) => medium.value === mediumKey);
+  if (selected && Math.abs(selected.n - n) < 0.001) return selected.name;
+  return "Пользовательская среда";
 }
 
 function synchronizeNewton(values, solveFor = values.solveFor) {
@@ -327,8 +335,8 @@ function drawSimulation(context, width, type, color, values, time, newtonMotion)
     context.fillStyle = "#fff";
     context.font = "14px sans-serif";
     context.textAlign = "left";
-    context.fillText(`n₁ = ${values.n1.toFixed(2)}`, 18, 32);
-    context.fillText(`n₂ = ${values.n2.toFixed(2)}`, 18, 185);
+    context.fillText(`${opticalMediumName(values.medium1, values.n1)} · n₁ = ${values.n1.toFixed(2)}`, 18, 32);
+    context.fillText(`${opticalMediumName(values.medium2, values.n2)} · n₂ = ${values.n2.toFixed(2)}`, 18, 185);
   } else if (type === "gravity") {
     const visualDistance = 90 + (values.distance - 2) * Math.min(13, (width - 250) / 18);
     const centerX = width / 2;
@@ -693,6 +701,12 @@ export default function PhysicsCanvas({ type, color, onNewtonSolveForChange, onO
     }
     if (type === "optics") {
       const next = { ...values, [control.key]: value };
+      if (control.key === "medium1") {
+        next.n1 = opticalMedia.find((medium) => medium.value === value)?.n ?? next.n1;
+      }
+      if (control.key === "medium2") {
+        next.n2 = opticalMedia.find((medium) => medium.value === value)?.n ?? next.n2;
+      }
       setValues(next);
       onOpticsChange?.(next);
       timeRef.current = 0;
