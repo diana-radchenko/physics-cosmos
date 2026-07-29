@@ -17,6 +17,14 @@ import {
 
 const HEIGHT = 300;
 
+const opticalMedia = [
+  { value: 1, label: "Воздух — n ≈ 1,00" },
+  { value: 1.33, label: "Вода — n ≈ 1,33" },
+  { value: 1.31, label: "Лёд — n ≈ 1,31" },
+  { value: 1.5, label: "Стекло — n ≈ 1,50" },
+  { value: 2.42, label: "Алмаз — n ≈ 2,42" },
+];
+
 const simulationConfig = {
   newton: {
     controls: [
@@ -33,11 +41,11 @@ const simulationConfig = {
   },
   optics: {
     controls: [
-      { key: "n1", label: "Среда 1, n₁", min: 1, max: 2.4, step: 0.05 },
-      { key: "n2", label: "Среда 2, n₂", min: 1, max: 2.4, step: 0.05 },
+      { key: "n1", label: "Первая среда n₁ (из неё выходит свет)", type: "select", options: opticalMedia },
+      { key: "n2", label: "Вторая среда n₂ (в неё входит свет)", type: "select", options: opticalMedia },
       { key: "angle", label: "Угол падения θ₁", min: 0, max: 80, step: 1, unit: "°" },
     ],
-    initial: { n1: 1, n2: 1.5, angle: 35 },
+    initial: { n1: 1, n2: 1.33, angle: 35 },
   },
   gravity: {
     controls: [
@@ -594,7 +602,7 @@ function drawSimulation(context, width, type, color, values, time, newtonMotion)
   context.shadowBlur = 0;
 }
 
-export default function PhysicsCanvas({ type, color, onNewtonSolveForChange }) {
+export default function PhysicsCanvas({ type, color, onNewtonSolveForChange, onOpticsChange }) {
   const canvasRef = useRef(null);
   const pausedRef = useRef(false);
   const timeRef = useRef(0);
@@ -673,6 +681,7 @@ export default function PhysicsCanvas({ type, color, onNewtonSolveForChange }) {
   const reset = () => {
     setValues({ ...config.initial });
     if (type === "newton") onNewtonSolveForChange?.(config.initial.solveFor);
+    if (type === "optics") onOpticsChange?.(config.initial);
     timeRef.current = 0;
     newtonMotionRef.current = { position: 50, velocity: 0 };
     setPaused(false);
@@ -681,6 +690,13 @@ export default function PhysicsCanvas({ type, color, onNewtonSolveForChange }) {
   const updateControl = (control, value) => {
     if (type === "newton" && control.key === "solveFor") {
       onNewtonSolveForChange?.(value);
+    }
+    if (type === "optics") {
+      const next = { ...values, [control.key]: value };
+      setValues(next);
+      onOpticsChange?.(next);
+      timeRef.current = 0;
+      return;
     }
     setValues((current) => {
       const next = { ...current, [control.key]: value };
