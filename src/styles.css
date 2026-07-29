@@ -199,9 +199,18 @@ p { line-height: 1.75; }
 .formula-panel span { color: var(--muted); text-transform: uppercase; font-size: .7rem; letter-spacing: .16em; }
 .formula-panel strong { margin-top: 15px; font-size: clamp(1.7rem, 4vw, 2.7rem); color: #a5f3fc; }
 .physics-canvas { border: 1px solid var(--border); border-radius: 20px; overflow: hidden; margin-bottom: 28px; }
-.physics-canvas canvas { display: block; width: 100%; height: 280px; }
-.canvas-controls { display: flex; justify-content: space-between; align-items: center; gap: 20px; padding: 14px 18px; background: rgba(255,255,255,.04); }
-.canvas-controls label { flex: 1; color: var(--muted); font-size: .8rem; }
+.physics-canvas canvas { display: block; width: 100%; height: 300px; }
+.simulation-readout { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; padding: 12px 18px; border-top: 1px solid var(--border); border-bottom: 1px solid var(--border); background: rgba(34,211,238,.06); }
+.simulation-readout span { min-width: 0; color: #dff9ff; font-size: .82rem; font-weight: 700; }
+.canvas-controls { display: grid; grid-template-columns: minmax(0, 1fr) auto; align-items: end; gap: 20px; padding: 16px 18px 18px; background: rgba(255,255,255,.04); }
+.canvas-control-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(190px, 1fr)); gap: 14px 18px; }
+.canvas-controls label { min-width: 0; color: var(--muted); font-size: .78rem; }
+.canvas-controls label > span { display: flex; justify-content: space-between; gap: 12px; margin-bottom: 7px; }
+.canvas-controls label b { color: #f8fafc; white-space: nowrap; }
+.canvas-controls select { width: 100%; min-height: 40px; border: 1px solid var(--border); border-radius: 11px; background: #101736; color: #f8fafc; padding: 0 10px; }
+.canvas-actions { display: flex; gap: 9px; }
+.message .katex-display { max-width: 100%; overflow-x: auto; overflow-y: hidden; padding: 4px 0; }
+.message .katex { font-size: 1.04em; }
 input[type="range"] { display: block; width: 100%; margin-top: 8px; accent-color: var(--purple); }
 .quiz { padding: 22px; border-radius: 20px; border: 1px solid rgba(236,72,153,.22); background: linear-gradient(145deg, rgba(236,72,153,.08), rgba(139,92,246,.08)); }
 .quiz-options { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin: 17px 0; }
@@ -385,7 +394,11 @@ input[type="range"] { display: block; width: 100%; margin-top: 8px; accent-color
   .topic-summary { padding: 16px; gap: 11px; }
   .topic-summary small { font-size: .7rem; }
   .topic-content { padding: 15px; }
-  .canvas-controls, .chat-input { align-items: stretch; flex-direction: column; }
+  .canvas-controls { grid-template-columns: 1fr; align-items: stretch; }
+  .canvas-actions { flex-wrap: wrap; }
+  .canvas-actions button { flex: 1; }
+  .simulation-readout { grid-template-columns: 1fr; }
+  .chat-input { align-items: stretch; flex-direction: column; }
   .simulator-page { width: calc(100% - 20px); }
   .experiment-library { padding: 17px; }
   .experiment-buttons { grid-template-columns: 1fr 1fr; }
