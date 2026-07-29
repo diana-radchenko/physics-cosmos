@@ -42,9 +42,7 @@ const simulationConfig = {
   optics: {
     controls: [
       { key: "medium1", label: "Первая среда (из неё выходит свет)", type: "select", options: opticalMedia },
-      { key: "n1", label: "Абсолютный показатель преломления n₁", min: 1, max: 10, step: 0.01 },
       { key: "medium2", label: "Вторая среда (в неё входит свет)", type: "select", options: opticalMedia },
-      { key: "n2", label: "Абсолютный показатель преломления n₂", min: 1, max: 10, step: 0.01 },
       { key: "angle", label: "Угол падения θ₁", min: 0, max: 80, step: 1, unit: "°" },
     ],
     initial: { medium1: "air", n1: 1, medium2: "water", n2: 1.33, angle: 35 },
@@ -335,8 +333,8 @@ function drawSimulation(context, width, type, color, values, time, newtonMotion)
     context.fillStyle = "#fff";
     context.font = "14px sans-serif";
     context.textAlign = "left";
-    context.fillText(`${opticalMediumName(values.medium1, values.n1)} · n₁ = ${values.n1.toFixed(2)}`, 18, 32);
-    context.fillText(`${opticalMediumName(values.medium2, values.n2)} · n₂ = ${values.n2.toFixed(2)}`, 18, 185);
+    context.fillText(opticalMediumName(values.medium1, values.n1), 18, 32);
+    context.fillText(opticalMediumName(values.medium2, values.n2), 18, 185);
   } else if (type === "gravity") {
     const visualDistance = 90 + (values.distance - 2) * Math.min(13, (width - 250) / 18);
     const centerX = width / 2;
