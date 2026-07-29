@@ -199,8 +199,14 @@ p { line-height: 1.75; }
 .formula-panel { display: grid; place-items: center; align-content: center; background: linear-gradient(145deg, rgba(34,211,238,.1), rgba(139,92,246,.14)); }
 .formula-panel span { color: var(--muted); text-transform: uppercase; font-size: .7rem; letter-spacing: .16em; }
 .formula-panel strong { margin-top: 15px; font-size: clamp(1.7rem, 4vw, 2.7rem); color: #a5f3fc; white-space: nowrap; }
-.topic-optics .theory-grid { grid-template-columns: minmax(0, 2fr) minmax(240px, .65fr); }
-.topic-optics .formula-panel strong { font-size: clamp(1.15rem, 2vw, 1.55rem); }
+.topic-optics .theory-grid { grid-template-columns: 1fr; }
+.topic-optics .formula-panel {
+  width: fit-content;
+  min-width: 280px;
+  justify-self: start;
+  padding: 15px 22px;
+}
+.topic-optics .formula-panel strong { margin-top: 8px; font-size: clamp(1.05rem, 1.7vw, 1.35rem); }
 .physics-canvas { border: 1px solid var(--border); border-radius: 20px; overflow: hidden; margin-bottom: 28px; }
 .physics-canvas canvas { display: block; width: 100%; height: 300px; }
 .simulation-readout { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; padding: 12px 18px; border-top: 1px solid var(--border); border-bottom: 1px solid var(--border); background: rgba(34,211,238,.06); }
@@ -214,6 +220,13 @@ p { line-height: 1.75; }
 .canvas-controls label b { color: #f8fafc; white-space: nowrap; }
 .canvas-controls select { width: 100%; min-height: 40px; border: 1px solid var(--border); border-radius: 11px; background: #101736; color: #f8fafc; padding: 0 10px; }
 .canvas-actions { display: flex; gap: 9px; }
+.topic-optics .canvas-actions { align-self: end; }
+.topic-optics .canvas-actions button {
+  min-height: 34px;
+  padding: 7px 11px;
+  font-size: .72rem;
+  white-space: nowrap;
+}
 .message .katex-display { max-width: 100%; overflow-x: auto; overflow-y: hidden; padding: 4px 0; }
 .message .katex { font-size: 1.04em; }
 input[type="range"] { display: block; width: 100%; margin-top: 8px; accent-color: var(--purple); }
