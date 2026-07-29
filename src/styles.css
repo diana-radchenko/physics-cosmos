@@ -195,6 +195,7 @@ p { line-height: 1.75; }
 .theory-grid { display: grid; grid-template-columns: 1.5fr .7fr; gap: 16px; margin-bottom: 25px; }
 .glass-panel, .formula-panel { border: 1px solid var(--border); border-radius: 20px; background: rgba(255,255,255,.045); padding: 22px; }
 .glass-panel p { color: #c3cae0; }
+.glass-panel p + p { margin-top: 16px; }
 .formula-panel { display: grid; place-items: center; align-content: center; background: linear-gradient(145deg, rgba(34,211,238,.1), rgba(139,92,246,.14)); }
 .formula-panel span { color: var(--muted); text-transform: uppercase; font-size: .7rem; letter-spacing: .16em; }
 .formula-panel strong { margin-top: 15px; font-size: clamp(1.7rem, 4vw, 2.7rem); color: #a5f3fc; }
@@ -204,6 +205,7 @@ p { line-height: 1.75; }
 .simulation-readout span { min-width: 0; color: #dff9ff; font-size: .82rem; font-weight: 700; }
 .canvas-controls { display: grid; grid-template-columns: minmax(0, 1fr) auto; align-items: end; gap: 20px; padding: 16px 18px 18px; background: rgba(255,255,255,.04); }
 .canvas-control-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(190px, 1fr)); gap: 14px 18px; }
+.newton-controls .canvas-control-grid { grid-template-columns: 1.15fr repeat(3, minmax(0, 1fr)); }
 .canvas-controls label { min-width: 0; color: var(--muted); font-size: .78rem; }
 .canvas-controls label > span { display: flex; justify-content: space-between; gap: 12px; margin-bottom: 7px; }
 .canvas-controls label b { color: #f8fafc; white-space: nowrap; }
@@ -364,6 +366,7 @@ input[type="range"] { display: block; width: 100%; margin-top: 8px; accent-color
   .image-story img, .mission-grid img { height: 320px; }
   .showcase-image img { height: 340px; }
   .theory-grid, .simulator-workspace, .friends-chat-layout { grid-template-columns: 1fr; }
+  .newton-controls .canvas-control-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
   .experiment-buttons { grid-template-columns: repeat(3, 1fr); }
   .experiment-library-heading { align-items: flex-start; flex-direction: column; gap: 10px; }
   .friends-chat-layout { min-height: 900px; }
@@ -395,6 +398,7 @@ input[type="range"] { display: block; width: 100%; margin-top: 8px; accent-color
   .topic-summary small { font-size: .7rem; }
   .topic-content { padding: 15px; }
   .canvas-controls { grid-template-columns: 1fr; align-items: stretch; }
+  .newton-controls .canvas-control-grid { grid-template-columns: 1fr; }
   .canvas-actions { flex-wrap: wrap; }
   .canvas-actions button { flex: 1; }
   .simulation-readout { grid-template-columns: 1fr; }
