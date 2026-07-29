@@ -22,16 +22,16 @@ const newtonQuizzes = {
 };
 
 const opticalMediaNames = {
-  1: "воздуха",
-  1.31: "льда",
-  1.33: "воды",
-  1.5: "стекла",
-  2.42: "алмаза",
+  air: { from: "воздуха", to: "воздух" },
+  water: { from: "воды", to: "воду" },
+  ice: { from: "льда", to: "лёд" },
+  glass: { from: "стекла", to: "стекло" },
+  diamond: { from: "алмаза", to: "алмаз" },
 };
 
-function getOpticsQuiz({ n1, n2, angle }) {
-  const from = opticalMediaNames[n1];
-  const to = opticalMediaNames[n2];
+function getOpticsQuiz({ medium1, medium2, n1, n2, angle }) {
+  const from = opticalMediaNames[medium1]?.from ?? "первой среды";
+  const to = opticalMediaNames[medium2]?.to ?? "вторую среду";
   const theta2 = refractedAngle(n1, n2, angle);
   const answers = [
     "Возникает полное внутреннее отражение",
@@ -42,21 +42,21 @@ function getOpticsQuiz({ n1, n2, angle }) {
 
   if (theta2 === null) {
     return {
-      question: `Что произойдёт со светом при переходе из ${from} в ${to} под углом ${angle}°?`,
+      question: `Как изменится направление света при переходе из ${from} в ${to} при угле падения ${angle}°?`,
       answers,
       correct: 0,
     };
   }
   if (n2 > n1) {
     return {
-      question: `Как изменится направление света при переходе из ${from} в ${to}?`,
+      question: `Как изменится направление света при переходе из ${from} в ${to} при угле падения ${angle}°?`,
       answers,
       correct: 1,
     };
   }
   if (n2 < n1) {
     return {
-      question: `Как изменится направление света при переходе из ${from} в ${to} под углом ${angle}°?`,
+      question: `Как изменится направление света при переходе из ${from} в ${to} при угле падения ${angle}°?`,
       answers,
       correct: 2,
     };
@@ -72,7 +72,13 @@ function TopicCard({ topic, open, onToggle }) {
   const [answer, setAnswer] = useState(null);
   const [checked, setChecked] = useState(false);
   const [newtonSolveFor, setNewtonSolveFor] = useState("acceleration");
-  const [opticsValues, setOpticsValues] = useState({ n1: 1, n2: 1.33, angle: 35 });
+  const [opticsValues, setOpticsValues] = useState({
+    medium1: "air",
+    n1: 1,
+    medium2: "water",
+    n2: 1.33,
+    angle: 35,
+  });
   const quiz = topic.id === "newton"
     ? newtonQuizzes[newtonSolveFor]
     : topic.id === "optics"
@@ -92,7 +98,7 @@ function TopicCard({ topic, open, onToggle }) {
   };
 
   return (
-    <article className={open ? "topic-card open" : "topic-card"}>
+    <article className={`${open ? "topic-card open" : "topic-card"} topic-${topic.id}`}>
       <button className="topic-summary" onClick={onToggle}>
         <span className="topic-icon" style={{ background: topic.color }}>{topic.icon}</span>
         <span><strong>{topic.title}</strong><small>{topic.summary}</small></span>
