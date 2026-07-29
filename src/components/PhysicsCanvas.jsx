@@ -18,11 +18,11 @@ import {
 const HEIGHT = 300;
 
 const opticalMedia = [
-  { value: "air", n: 1, name: "Воздух", label: "Воздух — n ≈ 1,00" },
-  { value: "water", n: 1.33, name: "Вода", label: "Вода — n ≈ 1,33" },
-  { value: "ice", n: 1.31, name: "Лёд", label: "Лёд — n ≈ 1,31" },
-  { value: "glass", n: 1.5, name: "Стекло", label: "Стекло — n ≈ 1,50" },
-  { value: "diamond", n: 2.42, name: "Алмаз", label: "Алмаз — n ≈ 2,42" },
+  { value: "air", n: 1, name: "Воздух", label: "Воздух" },
+  { value: "water", n: 1.33, name: "Вода", label: "Вода" },
+  { value: "ice", n: 1.31, name: "Лёд", label: "Лёд" },
+  { value: "glass", n: 1.5, name: "Стекло", label: "Стекло" },
+  { value: "diamond", n: 2.42, name: "Алмаз", label: "Алмаз" },
 ];
 
 const simulationConfig = {
@@ -41,10 +41,10 @@ const simulationConfig = {
   },
   optics: {
     controls: [
-      { key: "medium1", label: "Первая среда n₁ (из неё выходит свет)", type: "select", options: opticalMedia },
-      { key: "n1", label: "Значение n₁ от 1 до 10", min: 1, max: 10, step: 0.01 },
-      { key: "medium2", label: "Вторая среда n₂ (в неё входит свет)", type: "select", options: opticalMedia },
-      { key: "n2", label: "Значение n₂ от 1 до 10", min: 1, max: 10, step: 0.01 },
+      { key: "medium1", label: "Первая среда (из неё выходит свет)", type: "select", options: opticalMedia },
+      { key: "n1", label: "Абсолютный показатель преломления n₁", min: 1, max: 10, step: 0.01 },
+      { key: "medium2", label: "Вторая среда (в неё входит свет)", type: "select", options: opticalMedia },
+      { key: "n2", label: "Абсолютный показатель преломления n₂", min: 1, max: 10, step: 0.01 },
       { key: "angle", label: "Угол падения θ₁", min: 0, max: 80, step: 1, unit: "°" },
     ],
     initial: { medium1: "air", n1: 1, medium2: "water", n2: 1.33, angle: 35 },
