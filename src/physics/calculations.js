@@ -6,6 +6,30 @@ export function newtonAcceleration(force, mass) {
   return force / mass;
 }
 
+export function newtonForce(mass, acceleration) {
+  if (mass <= 0) throw new RangeError("Mass must be positive.");
+  return mass * acceleration;
+}
+
+export function newtonMass(force, acceleration) {
+  if (acceleration === 0) return null;
+  const mass = force / acceleration;
+  return mass > 0 ? mass : null;
+}
+
+export function advanceNewtonMotion(position, velocity, acceleration, deltaTime, minPosition, maxPosition, scale = 18) {
+  if (deltaTime <= 0) return { position, velocity };
+  const nextVelocity = velocity + acceleration * deltaTime;
+  const nextPosition = position + nextVelocity * deltaTime * scale;
+  if (nextPosition < minPosition || nextPosition > maxPosition) {
+    return {
+      position: Math.max(minPosition, Math.min(maxPosition, nextPosition)),
+      velocity: 0,
+    };
+  }
+  return { position: nextPosition, velocity: nextVelocity };
+}
+
 export function gravityForce(m1, m2, distance) {
   if (m1 < 0 || m2 < 0 || distance <= 0) throw new RangeError("Masses must be non-negative and distance positive.");
   return GRAVITATIONAL_CONSTANT * m1 * m2 / (distance ** 2);
