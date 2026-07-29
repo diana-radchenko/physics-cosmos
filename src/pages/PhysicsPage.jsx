@@ -2,9 +2,35 @@ import { useState } from "react";
 import { physicsTopics } from "../data/physics";
 import PhysicsCanvas from "../components/PhysicsCanvas";
 
+const newtonQuizzes = {
+  acceleration: {
+    question: "Какое ускорение получит тело массой 5 кг под действием силы 10 Н?",
+    answers: ["0,5 м/с²", "2 м/с²", "5 м/с²", "50 м/с²"],
+    correct: 1,
+  },
+  mass: {
+    question: "Какова масса тела, если сила равна 15 Н, а ускорение — 3 м/с²?",
+    answers: ["3 кг", "5 кг", "12 кг", "45 кг"],
+    correct: 1,
+  },
+  force: {
+    question: "Какая сила нужна, чтобы сообщить телу массой 5 кг ускорение 2 м/с²?",
+    answers: ["2,5 Н", "7 Н", "10 Н", "25 Н"],
+    correct: 2,
+  },
+};
+
 function TopicCard({ topic, open, onToggle }) {
   const [answer, setAnswer] = useState(null);
   const [checked, setChecked] = useState(false);
+  const [newtonSolveFor, setNewtonSolveFor] = useState("acceleration");
+  const quiz = topic.id === "newton" ? newtonQuizzes[newtonSolveFor] : topic;
+
+  const changeNewtonSolveFor = (solveFor) => {
+    setNewtonSolveFor(solveFor);
+    setAnswer(null);
+    setChecked(false);
+  };
 
   return (
     <article className={open ? "topic-card open" : "topic-card"}>
@@ -28,18 +54,22 @@ function TopicCard({ topic, open, onToggle }) {
             </section>
           </div>
           <h3>🔬 Интерактивная симуляция</h3>
-          <PhysicsCanvas type={topic.id} color={topic.color} />
+          <PhysicsCanvas
+            type={topic.id}
+            color={topic.color}
+            onNewtonSolveForChange={changeNewtonSolveFor}
+          />
           <section className="quiz">
             <h3>🎯 Проверь себя</h3>
-            <p>{topic.question}</p>
+            <p>{quiz.question}</p>
             <div className="quiz-options">
-              {topic.answers.map((item, index) => (
+              {quiz.answers.map((item, index) => (
                 <button
                   key={item}
                   className={[
                     answer === index ? "selected" : "",
-                    checked && index === topic.correct ? "correct" : "",
-                    checked && answer === index && index !== topic.correct ? "wrong" : "",
+                    checked && index === quiz.correct ? "correct" : "",
+                    checked && answer === index && index !== quiz.correct ? "wrong" : "",
                   ].join(" ")}
                   onClick={() => {
                     setAnswer(index);
@@ -51,7 +81,7 @@ function TopicCard({ topic, open, onToggle }) {
               ))}
             </div>
             <button className="primary-button" disabled={answer === null} onClick={() => setChecked(true)}>Проверить ответ</button>
-            {checked && <p className={answer === topic.correct ? "result success" : "result error"}>{answer === topic.correct ? "Правильно! Отличная работа." : "Пока нет — попробуй ещё раз."}</p>}
+            {checked && <p className={answer === quiz.correct ? "result success" : "result error"}>{answer === quiz.correct ? "Правильно! Отличная работа." : "Пока нет — попробуй ещё раз."}</p>}
           </section>
         </div>
       )}

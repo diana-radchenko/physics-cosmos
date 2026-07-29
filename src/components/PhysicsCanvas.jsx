@@ -594,7 +594,7 @@ function drawSimulation(context, width, type, color, values, time, newtonMotion)
   context.shadowBlur = 0;
 }
 
-export default function PhysicsCanvas({ type, color }) {
+export default function PhysicsCanvas({ type, color, onNewtonSolveForChange }) {
   const canvasRef = useRef(null);
   const pausedRef = useRef(false);
   const timeRef = useRef(0);
@@ -672,12 +672,16 @@ export default function PhysicsCanvas({ type, color }) {
 
   const reset = () => {
     setValues({ ...config.initial });
+    if (type === "newton") onNewtonSolveForChange?.(config.initial.solveFor);
     timeRef.current = 0;
     newtonMotionRef.current = { position: 50, velocity: 0 };
     setPaused(false);
   };
 
   const updateControl = (control, value) => {
+    if (type === "newton" && control.key === "solveFor") {
+      onNewtonSolveForChange?.(value);
+    }
     setValues((current) => {
       const next = { ...current, [control.key]: value };
       if (type !== "newton") return next;
