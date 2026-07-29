@@ -8,6 +8,8 @@ const shapeStyles = {
 };
 
 const colors = ["#22d3ee", "#8b5cf6", "#ec4899", "#10b981", "#f59e0b"];
+const MAX_OBJECTS = 40;
+const COLLISION_CELL_SIZE = 110;
 
 const experiments = [
   {
@@ -163,6 +165,39 @@ function resolveObjectCollision(first, second, elasticity, friction) {
   second.angularVelocity += spin;
 }
 
+function resolveAllCollisions(objects, elasticity, friction) {
+  const grid = new Map();
+
+  objects.forEach((object, index) => {
+    const minCellX = Math.floor((object.x - object.radius) / COLLISION_CELL_SIZE);
+    const maxCellX = Math.floor((object.x + object.radius) / COLLISION_CELL_SIZE);
+    const minCellY = Math.floor((object.y - object.radius) / COLLISION_CELL_SIZE);
+    const maxCellY = Math.floor((object.y + object.radius) / COLLISION_CELL_SIZE);
+
+    for (let cellX = minCellX; cellX <= maxCellX; cellX += 1) {
+      for (let cellY = minCellY; cellY <= maxCellY; cellY += 1) {
+        const key = `${cellX}:${cellY}`;
+        if (!grid.has(key)) grid.set(key, []);
+        grid.get(key).push(index);
+      }
+    }
+  });
+
+  const checkedPairs = new Set();
+  grid.forEach((indices) => {
+    for (let firstIndex = 0; firstIndex < indices.length; firstIndex += 1) {
+      for (let secondIndex = firstIndex + 1; secondIndex < indices.length; secondIndex += 1) {
+        const a = indices[firstIndex];
+        const b = indices[secondIndex];
+        const pairKey = a < b ? `${a}:${b}` : `${b}:${a}`;
+        if (checkedPairs.has(pairKey)) continue;
+        checkedPairs.add(pairKey);
+        resolveObjectCollision(objects[a], objects[b], elasticity, friction);
+      }
+    }
+  });
+}
+
 export default function SimulatorPage() {
   const canvasRef = useRef(null);
   const objectsRef = useRef([]);
@@ -245,11 +280,7 @@ export default function SimulatorPage() {
         }
       });
 
-      for (let firstIndex = 0; firstIndex < objects.length; firstIndex += 1) {
-        for (let secondIndex = firstIndex + 1; secondIndex < objects.length; secondIndex += 1) {
-          resolveObjectCollision(objects[firstIndex], objects[secondIndex], elasticityValue, frictionValue);
-        }
-      }
+      resolveAllCollisions(objects, elasticityValue, frictionValue);
     };
 
     const draw = () => {
@@ -280,7 +311,7 @@ export default function SimulatorPage() {
       lastTime = time;
 
       if (!pausedRef.current) {
-        const substeps = 3;
+        const substeps = objectsRef.current.length > 24 ? 1 : 2;
         for (let step = 0; step < substeps; step += 1) {
           updatePhysics(deltaTime / substeps);
         }
@@ -302,6 +333,11 @@ export default function SimulatorPage() {
   }, []);
 
   const addObject = (event) => {
+    if (objectsRef.current.length >= MAX_OBJECTS) {
+      setMessage(`Достигнут безопасный предел: ${MAX_OBJECTS} объектов`);
+      return;
+    }
+
     const canvas = canvasRef.current;
     const rect = canvas.getBoundingClientRect();
     const objectMass = Number(mass);
@@ -432,7 +468,7 @@ export default function SimulatorPage() {
           <div className="simulation-panel-header">
             <div>
               <h2>Область симуляции</h2>
-              <small>{experiments.find((item) => item.id === activeExperiment).title} · Объектов: {objectCount}</small>
+              <small>{experiments.find((item) => item.id === activeExperiment).title} · Объектов: {objectCount}/{MAX_OBJECTS}</small>
             </div>
             <div className="simulation-actions">
               <button className={paused ? "play-control paused" : "play-control"} onClick={() => setPaused(!paused)} title={paused ? "Продолжить" : "Пауза"}>
