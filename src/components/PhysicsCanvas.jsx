@@ -9,6 +9,7 @@ import {
   newtonForce,
   newtonMass,
   ohmCurrent,
+  pendulumAngle,
   pendulumPeriod,
   projectileMetrics,
   refractedAngle,
@@ -76,9 +77,9 @@ const simulationConfig = {
     controls: [
       { key: "length", label: "Длина L", min: 0.4, max: 3, step: 0.1, unit: "м" },
       { key: "gravity", label: "Ускорение g", min: 1.62, max: 15, step: 0.01, unit: "м/с²" },
-      { key: "amplitude", label: "Начальный угол", min: 5, max: 40, step: 1, unit: "°" },
+      { key: "initialAngle", label: "Начальный угол θ₀", min: 1, max: 15, step: 1, unit: "°" },
     ],
-    initial: { length: 1.5, gravity: 9.81, amplitude: 20 },
+    initial: { length: 1.5, gravity: 9.81, initialAngle: 10 },
   },
   heat: {
     controls: [
@@ -244,7 +245,10 @@ function getResults(type, values) {
   }
   if (type === "pendulum") {
     const period = pendulumPeriod(values.length, values.gravity);
-    return [`T = ${formatNumber(period, 2)} с`, "Масса груза не влияет на период"];
+    return [
+      `T ≈ 2π × √(L / g) = ${formatNumber(period, 2)} с`,
+      `L = ${formatNumber(values.length, 1)} м · g = ${formatNumber(values.gravity, 2)} м/с² · θ₀ = ${values.initialAngle}°`,
+    ];
   }
   if (type === "heat") {
     return [`Tравн = ${formatNumber((values.hot + values.cold) / 2, 1)} °C`, "Тепло идёт от горячего тела к холодному"];
@@ -521,13 +525,33 @@ function drawSimulation(context, width, type, color, values, time, newtonMotion)
     context.fillText("Сила на электрон — против E", width / 2, 295);
   } else if (type === "pendulum") {
     const period = pendulumPeriod(values.length, values.gravity);
-    const angularFrequency = 2 * Math.PI / period;
-    const angle = values.amplitude * Math.PI / 180 * Math.cos(angularFrequency * time);
+    const angleDegrees = pendulumAngle(
+      values.initialAngle,
+      values.length,
+      values.gravity,
+      time,
+    );
+    const angle = angleDegrees * Math.PI / 180;
     const anchorX = width / 2;
     const anchorY = 35;
     const visualLength = 80 + values.length * 52;
     const x = anchorX + Math.sin(angle) * visualLength;
     const y = anchorY + Math.cos(angle) * visualLength;
+
+    context.shadowBlur = 0;
+    context.strokeStyle = "rgba(255,255,255,.3)";
+    context.lineWidth = 1.5;
+    context.setLineDash([5, 5]);
+    context.beginPath();
+    context.moveTo(anchorX, anchorY);
+    context.lineTo(anchorX, anchorY + visualLength);
+    context.stroke();
+    context.setLineDash([]);
+
+    context.shadowBlur = 18;
+    context.shadowColor = color;
+    context.strokeStyle = color;
+    context.lineWidth = 3;
     context.beginPath();
     context.moveTo(anchorX, anchorY);
     context.lineTo(x, y);
@@ -537,8 +561,12 @@ function drawSimulation(context, width, type, color, values, time, newtonMotion)
     context.fill();
     context.fillStyle = "#fff";
     context.font = "13px sans-serif";
-    context.textAlign = "center";
-    context.fillText(`L = ${values.length.toFixed(1)} м`, anchorX, 280);
+    context.textAlign = "left";
+    context.fillText(`L = ${formatNumber(values.length, 1)} м`, 18, 24);
+    context.fillText(`θ₀ = ${values.initialAngle}°`, 18, 286);
+    context.textAlign = "right";
+    context.fillText(`g = ${formatNumber(values.gravity, 2)} м/с²`, width - 18, 24);
+    context.fillText(`T ≈ ${formatNumber(period, 2)} с`, width - 18, 286);
   } else if (type === "heat") {
     const equilibrium = (values.hot + values.cold) / 2;
     const factor = Math.exp(-values.conductivity * time * 0.32);

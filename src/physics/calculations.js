@@ -53,6 +53,11 @@ export function pendulumPeriod(length, gravity) {
   return 2 * Math.PI * Math.sqrt(length / gravity);
 }
 
+export function pendulumAngle(initialAngleDegrees, length, gravity, time) {
+  const period = pendulumPeriod(length, gravity);
+  return initialAngleDegrees * Math.cos(2 * Math.PI * time / period);
+}
+
 export function projectileMetrics(velocity, angleDegrees, gravity) {
   if (velocity < 0 || gravity <= 0) throw new RangeError("Velocity must be non-negative and gravity positive.");
   const angle = angleDegrees * Math.PI / 180;
