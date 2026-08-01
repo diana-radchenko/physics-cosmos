@@ -115,7 +115,6 @@ const simulationConfig = {
   magnetism: {
     controls: [
       { key: "strength", label: "Магнитная индукция B", min: 0.2, max: 2, step: 0.1, unit: "Тл" },
-      { key: "position", label: "Положение магнита", min: 30, max: 70, step: 1, unit: "%" },
       { key: "direction", label: "Ориентация магнита", type: "select", options: [
         { value: 1, label: "N слева, S справа" },
         { value: -1, label: "S слева, N справа" },
@@ -127,7 +126,7 @@ const simulationConfig = {
       ] },
       { key: "current", label: "Сила тока I", min: 1, max: 10, step: 1, unit: "А" },
     ],
-    initial: { strength: 1, position: 50, direction: 1, conductor: "out", current: 5 },
+    initial: { strength: 1, direction: 1, conductor: "out", current: 5 },
   },
   projectile: {
     controls: [
@@ -731,9 +730,7 @@ function drawSimulation(context, width, type, color, values, time, newtonMotion)
   } else if (type === "magnetism") {
     const magnetHalfWidth = Math.min(90, width * 0.2);
     const maximumFieldSpread = Math.min(88, width * 0.18);
-    const horizontalMargin = Math.min(width / 2, magnetHalfWidth + maximumFieldSpread);
-    const requestedCenterX = width * values.position / 100;
-    const centerX = Math.max(horizontalMargin, Math.min(width - horizontalMargin, requestedCenterX));
+    const centerX = width / 2;
     const centerY = 162;
     const magnetHeight = 56;
     const poleFlow = values.direction;
