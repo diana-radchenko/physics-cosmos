@@ -4,6 +4,7 @@ import {
   collisionResult,
   coulombForce,
   gravityForce,
+  heatTransferState,
   hookeMetrics,
   newtonAcceleration,
   newtonForce,
@@ -25,6 +26,14 @@ const opticalMedia = [
   { value: "ice", n: 1.31, name: "Лёд", label: "Лёд — n = 1,31" },
   { value: "glass", n: 1.57, name: "Стекло", label: "Стекло — n = 1,57" },
   { value: "diamond", n: 2.417, name: "Алмаз", label: "Алмаз — n = 2,417" },
+];
+
+const thermalMaterials = [
+  { value: "copper", c: 385, label: "Медь — c = 385 Дж/(кг·°C)" },
+  { value: "steel", c: 500, label: "Сталь — c = 500 Дж/(кг·°C)" },
+  { value: "glass", c: 840, label: "Стекло — c = 840 Дж/(кг·°C)" },
+  { value: "aluminium", c: 900, label: "Алюминий — c = 900 Дж/(кг·°C)" },
+  { value: "water", c: 4200, label: "Вода — c = 4200 Дж/(кг·°C)" },
 ];
 
 const simulationConfig = {
@@ -83,11 +92,25 @@ const simulationConfig = {
   },
   heat: {
     controls: [
-      { key: "hot", label: "Горячее тело", min: 30, max: 100, step: 1, unit: "°C" },
-      { key: "cold", label: "Холодное тело", min: 0, max: 29, step: 1, unit: "°C" },
-      { key: "conductivity", label: "Теплопроводность", min: 0.1, max: 1, step: 0.05 },
+      { key: "temperature1", label: "Начальная температура T₁", min: 0, max: 100, step: 1, unit: "°C" },
+      { key: "temperature2", label: "Начальная температура T₂", min: 0, max: 100, step: 1, unit: "°C" },
+      { key: "mass1", label: "Масса m₁", min: 0.5, max: 5, step: 0.5, unit: "кг" },
+      { key: "mass2", label: "Масса m₂", min: 0.5, max: 5, step: 0.5, unit: "кг" },
+      { key: "material1", label: "Материал тела 1", type: "select", options: thermalMaterials },
+      { key: "material2", label: "Материал тела 2", type: "select", options: thermalMaterials },
+      { key: "conductance", label: "Коэффициент теплопередачи K", min: 50, max: 500, step: 25, unit: "Вт/°C" },
     ],
-    initial: { hot: 80, cold: 20, conductivity: 0.35 },
+    initial: {
+      temperature1: 80,
+      temperature2: 20,
+      mass1: 1,
+      mass2: 1,
+      material1: "aluminium",
+      material2: "water",
+      specificHeat1: 900,
+      specificHeat2: 4200,
+      conductance: 250,
+    },
   },
   magnetism: {
     controls: [
@@ -251,7 +274,11 @@ function getResults(type, values) {
     ];
   }
   if (type === "heat") {
-    return [`Tравн = ${formatNumber((values.hot + values.cold) / 2, 1)} °C`, "Тепло идёт от горячего тела к холодному"];
+    const state = heatTransferState({ ...values, time: 0 });
+    return [
+      `Tравн = (m₁c₁T₁ + m₂c₂T₂) / (m₁c₁ + m₂c₂) = ${formatNumber(state.equilibrium, 1)} °C`,
+      "K ↑ → температуры выравниваются быстрее",
+    ];
   }
   if (type === "magnetism") {
     return ["Снаружи магнита линии направлены N → S", `Относительная интенсивность: ${formatNumber(values.strength, 1)}`];
@@ -568,24 +595,67 @@ function drawSimulation(context, width, type, color, values, time, newtonMotion)
     context.fillText(`g = ${formatNumber(values.gravity, 2)} м/с²`, width - 18, 24);
     context.fillText(`T ≈ ${formatNumber(period, 2)} с`, width - 18, 286);
   } else if (type === "heat") {
-    const equilibrium = (values.hot + values.cold) / 2;
-    const factor = Math.exp(-values.conductivity * time * 0.32);
-    const hotNow = equilibrium + (values.hot - equilibrium) * factor;
-    const coldNow = equilibrium + (values.cold - equilibrium) * factor;
-    const leftX = width * 0.27;
-    const rightX = width * 0.73;
-    context.fillStyle = `hsl(${Math.max(0, 220 - hotNow * 2.2)} 85% 55%)`;
-    context.fillRect(leftX - 70, 85, 140, 130);
-    context.fillStyle = `hsl(${Math.max(0, 220 - coldNow * 2.2)} 85% 55%)`;
-    context.fillRect(rightX - 70, 85, 140, 130);
-    drawArrow(context, leftX + 80, 150, rightX - 80, 150, "#fff", 3);
+    const state = heatTransferState({ ...values, time });
+    const leftX = width * 0.25;
+    const rightX = width * 0.75;
+    const bodyWidth = Math.min(165, Math.max(95, width * 0.24));
+    const bodyHeight = 132;
+    const bodyTop = 92;
+    const temperatureColor = (temperature) => {
+      const normalized = Math.max(0, Math.min(100, temperature));
+      return `hsl(${220 - normalized * 2.2} 85% 55%)`;
+    };
+    const drawBody = (x, label, temperature, mass, specificHeat) => {
+      context.fillStyle = temperatureColor(temperature);
+      context.fillRect(x - bodyWidth / 2, bodyTop, bodyWidth, bodyHeight);
+      context.fillStyle = "#fff";
+      context.textAlign = "center";
+      context.font = "bold 13px sans-serif";
+      context.fillText(label, x, bodyTop + 24);
+      context.font = "bold 20px sans-serif";
+      context.fillText(`${formatNumber(temperature, 1)} °C`, x, bodyTop + 58);
+      context.font = "12px sans-serif";
+      context.fillText(`m = ${formatNumber(mass, 1)} кг`, x, bodyTop + 88);
+      context.fillText(`c = ${specificHeat}`, x, bodyTop + 108);
+      context.font = "10px sans-serif";
+      context.fillText("Дж/(кг·°C)", x, bodyTop + 124);
+    };
+
+    context.shadowBlur = 0;
     context.fillStyle = "#fff";
-    context.font = "18px sans-serif";
     context.textAlign = "center";
-    context.fillText(`${hotNow.toFixed(1)} °C`, leftX, 155);
-    context.fillText(`${coldNow.toFixed(1)} °C`, rightX, 155);
-    context.font = "13px sans-serif";
-    context.fillText("Передача тепла", width / 2, 132);
+    context.font = "bold 13px sans-serif";
+    if (state.equilibriumReached) {
+      context.fillText("Тепловое равновесие: T₁ = T₂", width / 2, 38);
+    } else {
+      const fromX = state.direction > 0 ? leftX + bodyWidth / 2 + 10 : rightX - bodyWidth / 2 - 10;
+      const toX = state.direction > 0 ? rightX - bodyWidth / 2 - 10 : leftX + bodyWidth / 2 + 10;
+      context.fillText(
+        state.direction > 0 ? "Тепло: тело 1 → тело 2" : "Тепло: тело 2 → тело 1",
+        width / 2,
+        38,
+      );
+      drawArrow(context, fromX, 68, toX, 68, "#fff", 3);
+    }
+
+    drawBody(leftX, "Тело 1", state.temperature1, values.mass1, values.specificHeat1);
+    drawBody(rightX, "Тело 2", state.temperature2, values.mass2, values.specificHeat2);
+    context.fillStyle = "rgba(255,255,255,.85)";
+    context.font = width < 560 ? "11px sans-serif" : "12px sans-serif";
+    if (width < 560) {
+      context.textAlign = "center";
+      context.fillText(`t = ${formatNumber(time, 1)} с · K = ${values.conductance} Вт/°C`, width / 2, 253);
+      context.fillText(`Мощность теплопередачи: ${formatNumber(state.heatFlowPower / 1000, 2)} кВт`, width / 2, 272);
+    } else {
+      context.textAlign = "left";
+      context.fillText(`t = ${formatNumber(time, 1)} с`, 18, 270);
+      context.textAlign = "center";
+      context.fillText(`K = ${values.conductance} Вт/°C`, width / 2, 270);
+      context.textAlign = "right";
+      context.fillText(`Мощность: ${formatNumber(state.heatFlowPower / 1000, 2)} кВт`, width - 18, 270);
+    }
+    context.textAlign = "center";
+    context.fillText(`Tравн = ${formatNumber(state.equilibrium, 1)} °C`, width / 2, 291);
   } else if (type === "magnetism") {
     const centerX = width / 2;
     const leftPole = values.direction === 1 ? "N" : "S";
@@ -857,6 +927,17 @@ export default function PhysicsCanvas({ type, color, onNewtonSolveForChange, onO
       }
       setValues(next);
       onOpticsChange?.(next);
+      timeRef.current = 0;
+      return;
+    }
+    if (type === "heat" && (control.key === "material1" || control.key === "material2")) {
+      const selected = thermalMaterials.find((material) => material.value === value);
+      const next = {
+        ...values,
+        [control.key]: value,
+        [control.key === "material1" ? "specificHeat1" : "specificHeat2"]: selected?.c,
+      };
+      setValues(next);
       timeRef.current = 0;
       return;
     }
