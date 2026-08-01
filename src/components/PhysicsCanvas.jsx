@@ -217,7 +217,7 @@ function getResults(type, values) {
   }
   if (type === "gravity") {
     const force = gravityForce(values.m1 * 1e24, values.m2 * 1e24, values.distance * 1e7);
-    return [`F = ${formatNumber(force)} Н`, "G = 6,67430 × 10⁻¹¹ Н·м²/кг² (постоянная)"];
+    return [`F = ${formatNumber(force)} Н`, "G = 6,67 × 10⁻¹¹ Н·м²/кг² (постоянная)"];
   }
   if (type === "waves") {
     return [`v = λf = ${formatNumber(waveSpeed(values.wavelength, values.frequency))} м/с`, `T = ${formatNumber(1 / values.frequency)} с`];

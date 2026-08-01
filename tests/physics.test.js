@@ -44,6 +44,8 @@ test("Newton motion preserves paused state and advances continuously", () => {
 
 test("gravity follows the inverse-square law", () => {
   const original = gravityForce(5e24, 6e24, 8e7);
+  closeTo(gravityForce(10e24, 6e24, 8e7), original * 2, original * 1e-12);
+  closeTo(gravityForce(5e24, 12e24, 8e7), original * 2, original * 1e-12);
   closeTo(gravityForce(5e24, 6e24, 16e7), original / 4, original * 1e-12);
 });
 
