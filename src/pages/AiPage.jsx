@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
 import remarkMath from "remark-math";
@@ -14,12 +14,8 @@ const suggestions = [
   ["Как работает закон Гука?", "How does Hooke's law work?"],
 ];
 
-export default function AiPage({ locale }) {
-  const l = (ru, en) => text(locale, ru, en);
-  const [messages, setMessages] = useState([
-    {
-      from: "ai",
-      text: locale === "en" ? `# 👋 Hello!
+function greeting(locale) {
+  return locale === "en" ? `# 👋 Hello!
 
 I am your AI tutor for **school physics**.
 
@@ -45,12 +41,26 @@ Type your question below 👇` : `# 👋 Привет!
 - выполнять вычисления;
 - объяснять каждый шаг решения.
 
-Напишите свой вопрос 👇`,
+Напишите свой вопрос 👇`;
+}
+
+export default function AiPage({ locale }) {
+  const l = (ru, en) => text(locale, ru, en);
+  const [messages, setMessages] = useState([
+    {
+      from: "ai",
+      text: greeting(locale),
     },
   ]);
 
   const [value, setValue] = useState("");
   const [loading, setLoading] = useState(false);
+
+  useEffect(() => {
+    setMessages((current) => current.length === 1 && current[0].from === "ai"
+      ? [{ ...current[0], text: greeting(locale) }]
+      : current);
+  }, [locale]);
 
   const ask = async (question = value) => {
     const cleanQuestion = question.trim();
@@ -77,6 +87,7 @@ Type your question below 👇` : `# 👋 Привет!
         },
         body: JSON.stringify({
           messages: nextMessages,
+          locale,
         }),
       });
 

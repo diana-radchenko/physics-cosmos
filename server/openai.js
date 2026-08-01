@@ -5,6 +5,16 @@ import { SYSTEM_PROMPT } from "./physicsPrompt.js";
 const PHYSICS_REFUSAL =
   "Я помогаю только со школьной физикой. Задайте вопрос по физике.";
 
+const LANGUAGE_INSTRUCTIONS = {
+  ru: "Всегда отвечай на русском языке, независимо от языка отдельных сообщений в истории диалога.",
+  en: "Always answer in English, regardless of the language used in individual messages in the conversation history. Use English headings, explanations, clarification questions, units, and error text.",
+};
+
+export function buildPhysicsSystemPrompt(locale = "ru") {
+  const responseLocale = locale === "en" ? "en" : "ru";
+  return `${SYSTEM_PROMPT}\n\n=== RESPONSE LANGUAGE ===\n${LANGUAGE_INSTRUCTIONS[responseLocale]}`;
+}
+
 function shouldExcludeAssistantMessage(message) {
   if (message.from !== "ai") {
     return false;
@@ -14,7 +24,7 @@ function shouldExcludeAssistantMessage(message) {
 
   const isGreeting =
     text.includes("Привет!") &&
-    text.includes("AI-помощник");
+    (text.includes("AI-помощник") || text.includes("AI tutor"));
 
   const isTemplateRefusal =
     text === PHYSICS_REFUSAL;
@@ -29,9 +39,11 @@ export async function requestPhysicsAnswer({
   apiKey,
   model = "gpt-4o-mini",
   messages = [],
+  locale = "ru",
 }) {
+  const responseLocale = locale === "en" ? "en" : "ru";
   if (!apiKey) {
-    throw new Error("OPENAI_API_KEY не найден.");
+    throw new Error(responseLocale === "en" ? "OPENAI_API_KEY was not found." : "OPENAI_API_KEY не найден.");
   }
 
   const validMessages = messages
@@ -57,7 +69,7 @@ export async function requestPhysicsAnswer({
   );
 
   if (!hasUserMessage) {
-    throw new Error("Введите вопрос по физике.");
+    throw new Error(responseLocale === "en" ? "Enter a physics question." : "Введите вопрос по физике.");
   }
 
   const client = new OpenAI({ apiKey });
@@ -67,7 +79,7 @@ export async function requestPhysicsAnswer({
     messages: [
       {
         role: "system",
-        content: SYSTEM_PROMPT,
+        content: buildPhysicsSystemPrompt(responseLocale),
       },
       ...validMessages,
     ],
@@ -80,7 +92,9 @@ export async function requestPhysicsAnswer({
 
   if (!answer) {
     throw new Error(
-      "AI не вернул ответ. Попробуйте сформулировать вопрос иначе."
+      responseLocale === "en"
+        ? "The AI returned no answer. Try rephrasing your question."
+        : "AI не вернул ответ. Попробуйте сформулировать вопрос иначе."
     );
   }
 

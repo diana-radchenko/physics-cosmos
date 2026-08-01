@@ -15,15 +15,17 @@ export async function onRequestPost({ request, env }) {
     const body = await request.json();
 
     const messages = Array.isArray(body.messages) ? body.messages : [];
+    const locale = body.locale === "en" ? "en" : "ru";
 
     if (messages.length > 30) {
-      return json({ error: "Слишком длинная история диалога." }, 400);
+      return json({ error: locale === "en" ? "The conversation history is too long." : "Слишком длинная история диалога." }, 400);
     }
 
     const answer = await requestPhysicsAnswer({
       apiKey: env.OPENAI_API_KEY,
       model: env.OPENAI_MODEL || "gpt-4o-mini",
       messages,
+      locale,
     });
 
     return json({ answer });
