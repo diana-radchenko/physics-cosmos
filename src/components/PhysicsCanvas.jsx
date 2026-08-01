@@ -232,8 +232,15 @@ function getResults(type, values) {
   }
   if (type === "electric") {
     const force = coulombForce(values.q1 * 1e-6, values.q2 * 1e-6, values.distance);
-    const interaction = values.q1 === 0 || values.q2 === 0 ? "Взаимодействия нет" : values.q1 * values.q2 < 0 ? "Притяжение" : "Отталкивание";
-    return [`F = ${formatNumber(force, 3)} Н`, interaction];
+    const interaction = values.q1 === 0 || values.q2 === 0
+      ? "Сила взаимодействия равна нулю"
+      : values.q1 * values.q2 < 0
+        ? "Разноимённые заряды притягиваются"
+        : "Одноимённые заряды отталкиваются";
+    return [
+      `F = k × (q₁ × q₂) / r²; |F| = ${formatNumber(force, 3)} Н`,
+      interaction,
+    ];
   }
   if (type === "pendulum") {
     const period = pendulumPeriod(values.length, values.gravity);
@@ -431,36 +438,87 @@ function drawSimulation(context, width, type, color, values, time, newtonMotion)
       28,
     );
   } else if (type === "electric") {
-    const spread = 90 + values.distance * Math.min(28, (width - 220) / 8);
+    const maximumSpread = Math.max(100, Math.min(320, width - 150));
+    const spread = 100 + (values.distance - 1) / 7 * (maximumSpread - 100);
     const left = width / 2 - spread / 2;
     const right = width / 2 + spread / 2;
-    const charges = [[left, values.q1, "#3b82f6"], [right, values.q2, "#ef4444"]];
-    charges.forEach(([x, value, fill]) => {
-      context.fillStyle = value === 0 ? "#64748b" : fill;
+    const centerY = 142;
+    const force = coulombForce(values.q1 * 1e-6, values.q2 * 1e-6, values.distance);
+    const maximumForce = coulombForce(5e-6, 5e-6, 1);
+    const forceArrowLength = force === 0
+      ? 0
+      : 26 + 62 * Math.min(1, Math.sqrt(force / maximumForce));
+
+    const drawFieldAroundCharge = (x, value, radius) => {
+      if (value === 0) return;
+      const lineCount = 4 + Math.abs(value);
+      const fieldLength = 25 + Math.abs(value) * 2;
+      for (let index = 0; index < lineCount; index += 1) {
+        const angle = index / lineCount * Math.PI * 2;
+        const innerX = x + Math.cos(angle) * (radius + 5);
+        const innerY = centerY + Math.sin(angle) * (radius + 5);
+        const outerX = x + Math.cos(angle) * (radius + fieldLength);
+        const outerY = centerY + Math.sin(angle) * (radius + fieldLength);
+        if (value > 0) {
+          drawArrow(context, innerX, innerY, outerX, outerY, "rgba(244,114,182,.72)", 1.5);
+        } else {
+          drawArrow(context, outerX, outerY, innerX, innerY, "rgba(56,189,248,.72)", 1.5);
+        }
+      }
+    };
+
+    const radius1 = 23 + Math.abs(values.q1) * 1.8;
+    const radius2 = 23 + Math.abs(values.q2) * 1.8;
+    drawFieldAroundCharge(left, values.q1, radius1);
+    drawFieldAroundCharge(right, values.q2, radius2);
+
+    if (forceArrowLength > 0) {
+      const attract = values.q1 * values.q2 < 0;
+      const leftDirection = attract ? 1 : -1;
+      const rightDirection = -leftDirection;
+      const leftForceEnd = Math.max(15, Math.min(width - 15, left + leftDirection * forceArrowLength));
+      const rightForceEnd = Math.max(15, Math.min(width - 15, right + rightDirection * forceArrowLength));
+      drawArrow(context, left, 67, leftForceEnd, 67, "#fff", 3);
+      drawArrow(context, right, 67, rightForceEnd, 67, "#fff", 3);
+      context.fillStyle = "#fff";
+      context.font = "bold 13px sans-serif";
+      context.textAlign = "center";
+      context.fillText("F", (left + leftForceEnd) / 2, 55);
+      context.fillText("F", (right + rightForceEnd) / 2, 55);
+    }
+
+    [[left, values.q1, radius1], [right, values.q2, radius2]].forEach(([x, value, radius]) => {
+      context.fillStyle = value > 0 ? "#ec4899" : value < 0 ? "#0284c7" : "#64748b";
       context.beginPath();
-      context.arc(x, 150, 30, 0, Math.PI * 2);
+      context.arc(x, centerY, radius, 0, Math.PI * 2);
       context.fill();
       context.fillStyle = "#fff";
-      context.font = "24px sans-serif";
+      context.font = "bold 24px sans-serif";
       context.textAlign = "center";
-      context.fillText(chargeSign(value), x, 158);
+      context.fillText(chargeSign(value), x, centerY + 8);
     });
-    if (values.q1 !== 0 && values.q2 !== 0) {
-      const attract = values.q1 * values.q2 < 0;
-      const direction = attract ? 1 : -1;
-      drawArrow(context, left + 38, 110, left + 38 + direction * 55, 110, "#fff");
-      drawArrow(context, right - 38, 190, right - 38 - direction * 55, 190, "#fff");
-    }
-    context.strokeStyle = "rgba(255,255,255,.35)";
+
+    context.fillStyle = "#fff";
+    context.font = "13px sans-serif";
+    context.textAlign = "center";
+    context.fillText(`q₁ = ${values.q1} мкКл`, left, 196);
+    context.fillText(`q₂ = ${values.q2} мкКл`, right, 196);
+
+    context.strokeStyle = "rgba(255,255,255,.4)";
+    context.lineWidth = 1.5;
     context.setLineDash([5, 5]);
     context.beginPath();
-    context.moveTo(left, 225);
-    context.lineTo(right, 225);
+    context.moveTo(left, 216);
+    context.lineTo(right, 216);
     context.stroke();
     context.setLineDash([]);
     context.fillStyle = "#fff";
-    context.font = "13px sans-serif";
-    context.fillText(`r = ${values.distance.toFixed(1)} м`, width / 2, 245);
+    context.fillText(`r = ${formatNumber(values.distance, 1)} м`, width / 2, 238);
+    context.font = "12px sans-serif";
+    context.fillStyle = "rgba(255,255,255,.78)";
+    context.fillText("Направление поля E: от «+» к «−»", width / 2, 262);
+    context.fillText("Сила на «+» заряд — по E", width / 2, 279);
+    context.fillText("Сила на электрон — против E", width / 2, 295);
   } else if (type === "pendulum") {
     const period = pendulumPeriod(values.length, values.gravity);
     const angularFrequency = 2 * Math.PI / period;
