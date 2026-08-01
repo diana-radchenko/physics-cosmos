@@ -17,6 +17,7 @@ const pages = {
   ai: AiPage,
   chat: CommunityPage,
   friends: ContactsPage,
+  teachers: ContactsPage,
   about: AboutPage,
 };
 

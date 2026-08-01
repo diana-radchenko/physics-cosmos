@@ -238,5 +238,6 @@ export const navItems = [
   { id: "ai", label: "AI", icon: "✦" },
   { id: "chat", label: "Чат", icon: "💬" },
   { id: "friends", label: "Друзья", icon: "👥" },
+  { id: "teachers", label: "Учителя", icon: "👩‍🏫" },
   { id: "about", label: "Обо мне", icon: "ⓘ" },
 ];

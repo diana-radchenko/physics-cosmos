@@ -7,6 +7,11 @@ const directories = {
     { id: "friend-ivan", icon: "🧑‍🚀", name: "Иван Кузнецов", details: "Готовится к олимпиаде", online: false },
     { id: "friend-sofia", icon: "👩‍💻", name: "София Новикова", details: "Изучает электричество", online: true },
   ],
+  teachers: [
+    { id: "teacher-elena", icon: "👩‍🏫", name: "Елена Викторовна", details: "Механика и термодинамика", online: true },
+    { id: "teacher-sergey", icon: "👨‍🏫", name: "Сергей Андреевич", details: "Электродинамика", online: false },
+    { id: "teacher-olga", icon: "👩‍🔬", name: "Ольга Михайловна", details: "Оптика и астрономия", online: true },
+  ],
 };
 
 function read(key, fallback) {
