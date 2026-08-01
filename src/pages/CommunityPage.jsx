@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { text } from "../i18n.js";
 
 const initialMessages = [
   ["👩‍🎓", "Анна", "Привет всем! Кто-нибудь может объяснить закон сохранения энергии простыми словами?", "15:32"],
@@ -6,7 +7,8 @@ const initialMessages = [
   ["👩‍🚀", "София", "Например, при падении потенциальная энергия превращается в кинетическую.", "15:40"],
 ];
 
-export default function CommunityPage() {
+export default function CommunityPage({ locale }) {
+  const l = (ru, en) => text(locale, ru, en);
   const [messages, setMessages] = useState(initialMessages);
   const [value, setValue] = useState("");
 
@@ -20,9 +22,9 @@ export default function CommunityPage() {
   return (
     <section className="section page-section narrow-page">
       <div className="section-heading">
-        <p className="eyebrow">Учимся вместе</p>
-        <h1>Чат сообщества</h1>
-        <p>Общайся с учениками, делись знаниями и задавай вопросы.</p>
+        <p className="eyebrow">{l("Учимся вместе", "Learning together")}</p>
+        <h1>{l("Чат сообщества", "Community chat")}</h1>
+        <p>{l("Общайся с учениками, делись знаниями и задавай вопросы.", "Talk with students, share knowledge, and ask questions.")}</p>
       </div>
       <div className="chat-window">
         <div className="online-strip"><span className="online-dot" /> 1 247 пользователей онлайн</div>
@@ -35,8 +37,8 @@ export default function CommunityPage() {
           ))}
         </div>
         <form className="chat-input" onSubmit={send}>
-          <input value={value} onChange={(event) => setValue(event.target.value)} placeholder="Напиши сообщение..." />
-          <button className="primary-button">Отправить</button>
+          <input value={value} onChange={(event) => setValue(event.target.value)} placeholder={l("Напиши сообщение...", "Write a message...")} />
+          <button className="primary-button">{l("Отправить", "Send")}</button>
         </form>
       </div>
       <div className="tips-grid">

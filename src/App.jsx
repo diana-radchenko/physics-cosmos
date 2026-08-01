@@ -29,6 +29,7 @@ function pageFromHash() {
 export default function App() {
   const [page, setPage] = useState(pageFromHash);
   const [authOpen, setAuthOpen] = useState(false);
+  const [locale, setLocale] = useState(() => localStorage.getItem("physics-locale") || "ru");
   const [username, setUsername] = useState(() => {
     try { return JSON.parse(localStorage.getItem("physics-user") || "null")?.name || ""; }
     catch { return localStorage.getItem("physics-user") || ""; }
@@ -39,6 +40,11 @@ export default function App() {
     window.addEventListener("hashchange", onHashChange);
     return () => window.removeEventListener("hashchange", onHashChange);
   }, []);
+
+  useEffect(() => {
+    localStorage.setItem("physics-locale", locale);
+    document.documentElement.lang = locale;
+  }, [locale]);
 
   const navigate = (nextPage) => {
     window.location.hash = `/${nextPage}`;
@@ -68,11 +74,13 @@ export default function App() {
         username={username}
         onLogin={() => setAuthOpen(true)}
         onLogout={logout}
+        locale={locale}
+        onLocaleChange={setLocale}
       />
       <main>
-        <Page navigate={navigate} username={username} type={page} onRequireLogin={() => setAuthOpen(true)} />
+        <Page navigate={navigate} username={username} type={page} locale={locale} onRequireLogin={() => setAuthOpen(true)} />
       </main>
-      <AuthModal open={authOpen} onClose={() => setAuthOpen(false)} onLogin={login} />
+      <AuthModal open={authOpen} onClose={() => setAuthOpen(false)} onLogin={login} locale={locale} />
     </div>
   );
 }

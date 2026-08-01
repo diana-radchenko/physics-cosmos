@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from "react";
+import { text } from "../i18n.js";
 
 const shapeStyles = {
   circle: { label: "Круг", symbol: "●" },
@@ -198,7 +199,8 @@ function resolveAllCollisions(objects, elasticity, friction) {
   });
 }
 
-export default function SimulatorPage() {
+export default function SimulatorPage({ locale }) {
+  const l = (ru, en) => text(locale, ru, en);
   const canvasRef = useRef(null);
   const objectsRef = useRef([]);
   const physicsRef = useRef({ gravity: 1.7, friction: 0.35, elasticity: 0.65 });
@@ -435,16 +437,16 @@ export default function SimulatorPage() {
   return (
     <section className="section page-section simulator-page">
       <div className="section-heading">
-        <p className="eyebrow">Твоя лаборатория</p>
-        <h1>Создай свою симуляцию</h1>
-        <p>Добавляй объекты и наблюдай, как на них действуют гравитация, трение и упругость.</p>
+        <p className="eyebrow">{l("Твоя лаборатория", "Your laboratory")}</p>
+        <h1>{l("Создай свою симуляцию", "Create your simulation")}</h1>
+        <p>{l("Добавляй объекты и наблюдай, как на них действуют гравитация, трение и упругость.", "Add objects and observe gravity, friction, and elasticity in action.")}</p>
       </div>
 
       <section className="experiment-library glass-panel">
         <div className="experiment-library-heading">
           <div>
-            <p className="eyebrow">Готовые опыты</p>
-            <h2>Выбери физический сценарий</h2>
+            <p className="eyebrow">{l("Готовые опыты", "Ready experiments")}</p>
+            <h2>{l("Выбери физический сценарий", "Choose a physics scenario")}</h2>
           </div>
           <p>{experiments.find((item) => item.id === activeExperiment).description}</p>
         </div>
@@ -467,7 +469,7 @@ export default function SimulatorPage() {
         <div className="simulation-panel glass-panel">
           <div className="simulation-panel-header">
             <div>
-              <h2>Область симуляции</h2>
+              <h2>{l("Область симуляции", "Simulation area")}</h2>
               <small>{experiments.find((item) => item.id === activeExperiment).title} · Объектов: {objectCount}/{MAX_OBJECTS}</small>
             </div>
             <div className="simulation-actions">
@@ -479,7 +481,7 @@ export default function SimulatorPage() {
           </div>
           <div className="simulation-stage">
             <canvas ref={canvasRef} onClick={addObject} aria-label="Интерактивная область физической симуляции" />
-            {objectCount === 0 && <p className="stage-hint">💡 Кликай на холст, чтобы добавить объекты</p>}
+            {objectCount === 0 && <p className="stage-hint">💡 {l("Кликай на холст, чтобы добавить объекты", "Click the canvas to add objects")}</p>}
           </div>
         </div>
 
@@ -519,8 +521,8 @@ export default function SimulatorPage() {
       </div>
 
       <div className="button-row compact simulator-footer">
-        <button className="primary-button" onClick={save}>Сохранить</button>
-        <button className="ghost-button" onClick={share}>Поделиться</button>
+        <button className="primary-button" onClick={save}>{l("Сохранить", "Save")}</button>
+        <button className="ghost-button" onClick={share}>{l("Поделиться", "Share")}</button>
         <span className="status-message">{message}</span>
       </div>
     </section>

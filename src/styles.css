@@ -71,6 +71,9 @@ p { line-height: 1.75; }
 .nav-button.active { background: linear-gradient(135deg, var(--purple), var(--pink)); box-shadow: 0 9px 24px rgba(139, 92, 246, .36); }
 .profile-actions { display: flex; gap: 8px; align-items: center; }
 .user-chip { padding: 10px 13px; border-radius: 13px; background: linear-gradient(135deg, rgba(34, 211, 238, .25), rgba(139, 92, 246, .32)); font-size: .88rem; font-weight: 700; }
+.language-switch { display: flex; padding: 3px; border: 1px solid var(--border); border-radius: 11px; background: rgba(255,255,255,.04); }
+.language-switch button { border: 0; border-radius: 8px; padding: 7px 8px; background: transparent; color: var(--muted); font-size: .7rem; font-weight: 800; cursor: pointer; }
+.language-switch button.active { background: linear-gradient(135deg, var(--cyan), var(--purple)); color: white; }
 
 .primary-button, .ghost-button, .secondary-button {
   border: 0;

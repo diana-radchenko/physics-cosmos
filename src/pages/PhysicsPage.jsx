@@ -2,6 +2,7 @@ import { useState } from "react";
 import { physicsTopics } from "../data/physics";
 import PhysicsCanvas from "../components/PhysicsCanvas";
 import { refractedAngle } from "../physics/calculations";
+import { localizeTopics, text } from "../i18n.js";
 
 const newtonQuizzes = {
   acceleration: {
@@ -68,7 +69,8 @@ function getOpticsQuiz({ medium1, medium2, n1, n2, angle }) {
   };
 }
 
-function TopicCard({ topic, open, onToggle }) {
+function TopicCard({ topic, open, onToggle, locale }) {
+  const l = (ru, en) => text(locale, ru, en);
   const [answer, setAnswer] = useState(null);
   const [checked, setChecked] = useState(false);
   const [newtonSolveFor, setNewtonSolveFor] = useState("acceleration");
@@ -108,16 +110,16 @@ function TopicCard({ topic, open, onToggle }) {
         <div className="topic-content">
           <div className="theory-grid">
             <section className="glass-panel">
-              <h3>📚 Теория</h3>
+              <h3>📚 {l("Теория", "Theory")}</h3>
               {topic.theory.split("\n\n").map((paragraph) => (
                 <p key={paragraph}>{paragraph}</p>
               ))}
             </section>
             <section className="formula-panel">
-              <span>Формула</span>
+              <span>{l("Формула", "Formula")}</span>
               <strong>{topic.formula}</strong>
               <div className="formula-symbols">
-                <h4>Обозначения</h4>
+                <h4>{l("Обозначения", "Symbols")}</h4>
                 <dl>
                   {topic.symbols.map(({ symbol, meaning, unit }) => (
                     <div className="formula-symbol" key={symbol}>
@@ -132,7 +134,7 @@ function TopicCard({ topic, open, onToggle }) {
               </div>
             </section>
           </div>
-          <h3>🔬 Интерактивная симуляция</h3>
+          <h3>🔬 {l("Интерактивная симуляция", "Interactive simulation")}</h3>
           <PhysicsCanvas
             type={topic.id}
             color={topic.color}
@@ -140,7 +142,7 @@ function TopicCard({ topic, open, onToggle }) {
             onOpticsChange={changeOpticsValues}
           />
           <section className="quiz">
-            <h3>🎯 Проверь себя</h3>
+            <h3>🎯 {l("Проверь себя", "Test yourself")}</h3>
             <p>{quiz.question}</p>
             <div className="quiz-options">
               {quiz.answers.map((item, index) => (
@@ -160,8 +162,8 @@ function TopicCard({ topic, open, onToggle }) {
                 </button>
               ))}
             </div>
-            <button className="primary-button" disabled={answer === null} onClick={() => setChecked(true)}>Проверить ответ</button>
-            {checked && <p className={answer === quiz.correct ? "result success" : "result error"}>{answer === quiz.correct ? "Правильно! Отличная работа." : "Пока нет — попробуй ещё раз."}</p>}
+            <button className="primary-button" disabled={answer === null} onClick={() => setChecked(true)}>{l("Проверить ответ", "Check answer")}</button>
+            {checked && <p className={answer === quiz.correct ? "result success" : "result error"}>{answer === quiz.correct ? l("Правильно! Отличная работа.", "Correct! Great job.") : l("Пока нет — попробуй ещё раз.", "Not yet — try again.")}</p>}
           </section>
         </div>
       )}
@@ -169,23 +171,24 @@ function TopicCard({ topic, open, onToggle }) {
   );
 }
 
-export default function PhysicsPage() {
+export default function PhysicsPage({ locale }) {
   const [openTopic, setOpenTopic] = useState("newton");
 
   return (
     <section className="section page-section">
       <div className="section-heading">
-        <p className="eyebrow">Теория + практика</p>
-        <h1>Физика в симуляциях</h1>
-        <p>Выбери тему, поэкспериментируй и проверь себя.</p>
+        <p className="eyebrow">{text(locale, "Теория + практика", "Theory + practice")}</p>
+        <h1>{text(locale, "Физика в симуляциях", "Physics through simulations")}</h1>
+        <p>{text(locale, "Выбери тему, поэкспериментируй и проверь себя.", "Choose a topic, experiment, and test yourself.")}</p>
       </div>
       <div className="topics-list">
-        {physicsTopics.map((topic) => (
+        {localizeTopics(physicsTopics, locale).map((topic) => (
           <TopicCard
             key={topic.id}
             topic={topic}
             open={openTopic === topic.id}
             onToggle={() => setOpenTopic(openTopic === topic.id ? "" : topic.id)}
+            locale={locale}
           />
         ))}
       </div>

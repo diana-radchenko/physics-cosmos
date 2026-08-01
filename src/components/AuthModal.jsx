@@ -1,7 +1,9 @@
 import { useState } from "react";
 import { loginAccount, registerAccount } from "../utils/accountStore.js";
+import { text } from "../i18n.js";
 
-export default function AuthModal({ open, onClose, onLogin }) {
+export default function AuthModal({ open, onClose, onLogin, locale }) {
+  const l = (ru, en) => text(locale, ru, en);
   const [register, setRegister] = useState(false);
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
@@ -37,53 +39,53 @@ export default function AuthModal({ open, onClose, onLogin }) {
   return (
     <div className="modal-backdrop" onMouseDown={onClose}>
       <section className="modal-card" onMouseDown={(event) => event.stopPropagation()}>
-        <button className="modal-close" onClick={onClose} aria-label="Закрыть">×</button>
+        <button className="modal-close" onClick={onClose} aria-label={l("Закрыть", "Close")}>×</button>
         <div className="modal-icon">🚀</div>
-        <h2>{register ? "Регистрация" : "Вход"}</h2>
-        <p>{register ? "Создай аккаунт и начни изучать физику" : "Войди в свой аккаунт ФизикаКосмос"}</p>
+        <h2>{register ? l("Регистрация", "Sign up") : l("Вход", "Log in")}</h2>
+        <p>{register ? l("Создай аккаунт и начни изучать физику", "Create an account and start learning physics") : l("Войди в свой аккаунт ФизикаКосмос", "Log in to your Physics Cosmos account")}</p>
         <form onSubmit={submit}>
           {register && (
             <>
               <div className="role-selector" aria-label="Тип пользователя">
-                <button type="button" className={role === "student" ? "active" : ""} onClick={() => setRole("student")}>🎓 Школьник</button>
-                <button type="button" className={role === "teacher" ? "active" : ""} onClick={() => setRole("teacher")}>👩‍🏫 Учитель</button>
+                <button type="button" className={role === "student" ? "active" : ""} onClick={() => setRole("student")}>🎓 {l("Школьник", "Student")}</button>
+                <button type="button" className={role === "teacher" ? "active" : ""} onClick={() => setRole("teacher")}>👩‍🏫 {l("Учитель", "Teacher")}</button>
               </div>
               <label>
-                ФИО
+                {l("ФИО", "Full name")}
                 <input value={name} onChange={(event) => setName(event.target.value)} required />
               </label>
               {role === "student" ? (
                 <div className="registration-fields">
-                  <label>Номер класса<input placeholder="Например, 9А" value={classNumber} onChange={(event) => setClassNumber(event.target.value)} required /></label>
-                  <label>Направление класса<input placeholder="Физико-математическое" value={classDirection} onChange={(event) => setClassDirection(event.target.value)} required /></label>
-                  <label>Дата рождения<input type="date" value={birthDate} onChange={(event) => setBirthDate(event.target.value)} required /></label>
-                  <label>Номер школы<input placeholder="Например, 57" value={schoolNumber} onChange={(event) => setSchoolNumber(event.target.value)} required /></label>
+                  <label>{l("Номер класса", "Class") }<input placeholder={l("Например, 9А", "For example, 9A")} value={classNumber} onChange={(event) => setClassNumber(event.target.value)} required /></label>
+                  <label>{l("Направление класса", "Class specialization")}<input placeholder={l("Физико-математическое", "Physics and mathematics")} value={classDirection} onChange={(event) => setClassDirection(event.target.value)} required /></label>
+                  <label>{l("Дата рождения", "Date of birth")}<input type="date" value={birthDate} onChange={(event) => setBirthDate(event.target.value)} required /></label>
+                  <label>{l("Номер школы", "School number")}<input placeholder={l("Например, 57", "For example, 57")} value={schoolNumber} onChange={(event) => setSchoolNumber(event.target.value)} required /></label>
                 </div>
               ) : (
                 <div className="registration-fields">
-                  <label>Преподаваемый предмет<input placeholder="Например, физика" value={subject} onChange={(event) => setSubject(event.target.value)} required /></label>
-                  <label>Номер школы<input placeholder="Например, 57" value={schoolNumber} onChange={(event) => setSchoolNumber(event.target.value)} required /></label>
+                  <label>{l("Преподаваемый предмет", "Subject taught")}<input placeholder={l("Например, физика", "For example, physics")} value={subject} onChange={(event) => setSubject(event.target.value)} required /></label>
+                  <label>{l("Номер школы", "School number")}<input placeholder={l("Например, 57", "For example, 57")} value={schoolNumber} onChange={(event) => setSchoolNumber(event.target.value)} required /></label>
                 </div>
               )}
             </>
           )}
           <label>
-            Электронная почта
+            {l("Электронная почта", "Email")}
             <input type="email" placeholder="твой@email.com" value={email} onChange={(event) => setEmail(event.target.value)} required />
           </label>
           <label>
-            Пароль
+            {l("Пароль", "Password")}
             <input type="password" placeholder="••••••••" value={password} onChange={(event) => setPassword(event.target.value)} required />
           </label>
           {error && <p className="auth-error" role="alert">{error}</p>}
           <button className="primary-button wide" type="submit" disabled={loading}>
-            {loading ? "Проверяем..." : register ? "Зарегистрироваться" : "Войти"}
+            {loading ? l("Проверяем...", "Checking...") : register ? l("Зарегистрироваться", "Sign up") : l("Войти", "Log in")}
           </button>
         </form>
         <button className="text-button" onClick={() => setRegister(!register)}>
-          {register ? "Уже есть аккаунт? Войди" : "Нет аккаунта? Зарегистрируйся"}
+          {register ? l("Уже есть аккаунт? Войди", "Already have an account? Log in") : l("Нет аккаунта? Зарегистрируйся", "No account? Sign up")}
         </button>
-        <small className="privacy-note">🔒 Локальный аккаунт: данные сохраняются только в этом браузере.</small>
+        <small className="privacy-note">🔒 {l("Локальный аккаунт: данные сохраняются только в этом браузере.", "Local account: data is stored only in this browser.")}</small>
       </section>
     </div>
   );

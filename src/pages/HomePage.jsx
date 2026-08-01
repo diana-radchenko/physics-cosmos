@@ -1,3 +1,5 @@
+import { text } from "../i18n.js";
+
 const features = [
   ["⚛", "Интерактивные симуляции", "Наблюдай физические процессы в реальном времени", "physics"],
   ["✦", "AI-помощник", "Получай понятные ответы на вопросы по физике", "ai"],
@@ -5,21 +7,21 @@ const features = [
   ["👥", "Сообщество учеников", "Общайся и обменивайся знаниями", "chat"],
 ];
 
-export default function HomePage({ navigate }) {
+export default function HomePage({ navigate, locale }) {
+  const l = (ru, en) => text(locale, ru, en);
   return (
     <>
       <section className="hero section">
         <div className="hero-copy">
           <div className="orb-logo">⚛</div>
-          <p className="eyebrow">Физика становится видимой</p>
-          <h1>Открой для себя <span>мир физики</span></h1>
+          <p className="eyebrow">{l("Физика становится видимой", "Physics becomes visible")}</p>
+          <h1>{l("Открой для себя", "Discover the")} <span>{l("мир физики", "world of physics")}</span></h1>
           <p className="lead">
-            Погрузись в путешествие по законам Вселенной. Интерактивные симуляции,
-            AI-помощник и живое сообщество помогут понять, как устроен наш мир.
+            {l("Погрузись в путешествие по законам Вселенной. Интерактивные симуляции, AI-помощник и живое сообщество помогут понять, как устроен наш мир.", "Explore the laws of the universe. Interactive simulations, an AI tutor, and a learning community will help you understand how our world works.")}
           </p>
           <div className="button-row">
-            <button className="primary-button large" onClick={() => navigate("physics")}>Начать изучение</button>
-            <button className="ghost-button large" onClick={() => navigate("about")}>Узнать больше</button>
+            <button className="primary-button large" onClick={() => navigate("physics")}>{l("Начать изучение", "Start learning")}</button>
+            <button className="ghost-button large" onClick={() => navigate("about")}>{l("Узнать больше", "Learn more")}</button>
           </div>
           <div className="stats">
             {[["10+", "Симуляций"], ["24/7", "AI поддержка"], ["∞", "Знаний"], ["100%", "Бесплатно"]].map(([value, label]) => (
@@ -40,9 +42,9 @@ export default function HomePage({ navigate }) {
 
       <section className="section">
         <div className="section-heading">
-          <p className="eyebrow">Почему ФизикаКосмос?</p>
-          <h2>Учиться — значит экспериментировать</h2>
-          <p>Каждый раздел можно открыть, изменить параметры и увидеть результат.</p>
+          <p className="eyebrow">{l("Почему ФизикаКосмос?", "Why Physics Cosmos?")}</p>
+          <h2>{l("Учиться — значит экспериментировать", "Learning means experimenting")}</h2>
+          <p>{l("Каждый раздел можно открыть, изменить параметры и увидеть результат.", "Open any section, change parameters, and see the result.")}</p>
         </div>
         <div className="feature-grid">
           {features.map(([icon, title, description, target]) => (

@@ -5,6 +5,7 @@ import remarkMath from "remark-math";
 import rehypeKatex from "rehype-katex";
 import "katex/dist/katex.min.css";
 import { normalizeMathMarkdown } from "../utils/mathText.js";
+import { text } from "../i18n.js";
 
 const suggestions = [
   "Объясни закон сохранения энергии",
@@ -13,7 +14,8 @@ const suggestions = [
   "Как работает закон Гука?",
 ];
 
-export default function AiPage() {
+export default function AiPage({ locale }) {
+  const l = (ru, en) => text(locale, ru, en);
   const [messages, setMessages] = useState([
     {
       from: "ai",
@@ -98,15 +100,12 @@ export default function AiPage() {
     <section className="section page-section narrow-page">
 
       <div className="section-heading">
-        <p className="eyebrow">Персональный учитель</p>
+        <p className="eyebrow">{l("Персональный учитель", "Personal tutor")}</p>
 
-        <h1>Спроси у AI</h1>
+        <h1>{l("Спроси у AI", "Ask AI")}</h1>
 
         <p>
-          Пошаговые решения по школьной физике
-          с проверкой единиц измерения,
-          подстановкой чисел
-          и корректным отображением формул.
+          {l("Пошаговые решения по школьной физике с проверкой единиц измерения, подстановкой чисел и корректным отображением формул.", "Step-by-step school physics solutions with unit checks, numerical substitution, and correctly rendered formulas.")}
         </p>
       </div>
 
@@ -214,7 +213,7 @@ export default function AiPage() {
             onChange={(event) =>
               setValue(event.target.value)
             }
-            placeholder="Введите задачу по физике..."
+            placeholder={l("Введите задачу по физике...", "Enter a physics problem...")}
           />
 
           <button
@@ -224,8 +223,8 @@ export default function AiPage() {
             }
           >
             {loading
-              ? "Думаю..."
-              : "Отправить"}
+              ? l("Думаю...", "Thinking...")
+              : l("Отправить", "Send")}
           </button>
         </form>
 
