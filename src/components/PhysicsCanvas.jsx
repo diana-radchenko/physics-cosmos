@@ -277,6 +277,10 @@ function getResults(type, values) {
     const state = heatTransferState({ ...values, time: 0 });
     return [
       `Tравн = (m₁c₁T₁ + m₂c₂T₂) / (m₁c₁ + m₂c₂) = ${formatNumber(state.equilibrium, 1)} °C`,
+      "Tравн — общая температура после теплообмена",
+      "m₁, m₂ — массы тел",
+      "c₁, c₂ — их удельные теплоёмкости",
+      "T₁, T₂ — начальные температуры",
       "K ↑ → температуры выравниваются быстрее",
     ];
   }
