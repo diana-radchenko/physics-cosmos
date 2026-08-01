@@ -60,8 +60,9 @@ const simulationConfig = {
     controls: [
       { key: "frequency", label: "Частота f", min: 0.5, max: 5, step: 0.1, unit: "Гц" },
       { key: "wavelength", label: "Длина волны λ", min: 0.5, max: 5, step: 0.1, unit: "м" },
+      { key: "amplitude", label: "Амплитуда A", min: 0.2, max: 1.5, step: 0.1, unit: "м" },
     ],
-    initial: { frequency: 2, wavelength: 2 },
+    initial: { frequency: 2, wavelength: 2, amplitude: 1 },
   },
   electric: {
     controls: [
@@ -224,7 +225,10 @@ function getResults(type, values) {
     ];
   }
   if (type === "waves") {
-    return [`v = λf = ${formatNumber(waveSpeed(values.wavelength, values.frequency))} м/с`, `T = ${formatNumber(1 / values.frequency)} с`];
+    return [
+      `v = λf = ${formatNumber(waveSpeed(values.wavelength, values.frequency))} м/с`,
+      `T = ${formatNumber(1 / values.frequency)} с · A = ${formatNumber(values.amplitude, 1)} м`,
+    ];
   }
   if (type === "electric") {
     const force = coulombForce(values.q1 * 1e-6, values.q2 * 1e-6, values.distance);
@@ -394,13 +398,38 @@ function drawSimulation(context, width, type, color, values, time, newtonMotion)
     context.fillText("F", (arrowStartX + arrowEndX) / 2, (arrowStartY + arrowEndY) / 2 - 8);
     context.fillText(`r = ${values.distance} × 10⁷ м`, centerX, 267);
   } else if (type === "waves") {
-    const pixelsPerWave = Math.max(55, values.wavelength * 55);
+    const centerY = 150;
+    const pixelsPerWave = 35 + values.wavelength * 45;
+    const amplitudePixels = values.amplitude * 50;
+
+    context.shadowBlur = 0;
+    context.strokeStyle = "rgba(255,255,255,.25)";
+    context.lineWidth = 1;
+    context.beginPath();
+    context.moveTo(0, centerY);
+    context.lineTo(width, centerY);
+    context.stroke();
+
+    context.shadowBlur = 18;
+    context.shadowColor = color;
+    context.strokeStyle = color;
+    context.lineWidth = 3;
     context.beginPath();
     for (let x = 0; x <= width; x += 3) {
-      const y = 150 + Math.sin((x / pixelsPerWave) * Math.PI * 2 - time * values.frequency * Math.PI * 2) * 55;
+      const y = centerY + Math.sin((x / pixelsPerWave) * Math.PI * 2 - time * values.frequency * Math.PI * 2) * amplitudePixels;
       x === 0 ? context.moveTo(x, y) : context.lineTo(x, y);
     }
     context.stroke();
+
+    context.shadowBlur = 0;
+    context.fillStyle = "#fff";
+    context.font = "14px sans-serif";
+    context.textAlign = "left";
+    context.fillText(
+      `f = ${formatNumber(values.frequency, 1)} Гц · λ = ${formatNumber(values.wavelength, 1)} м · A = ${formatNumber(values.amplitude, 1)} м`,
+      18,
+      28,
+    );
   } else if (type === "electric") {
     const spread = 90 + values.distance * Math.min(28, (width - 220) / 8);
     const left = width / 2 - spread / 2;
