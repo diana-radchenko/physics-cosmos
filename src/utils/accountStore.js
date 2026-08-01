@@ -14,7 +14,7 @@ async function passwordHash(password) {
   return Array.from(new Uint8Array(digest), (byte) => byte.toString(16).padStart(2, "0")).join("");
 }
 
-export async function registerAccount({ name, email, password }) {
+export async function registerAccount({ name, email, password, role, classNumber, classDirection, birthDate, schoolNumber, subject }) {
   const accounts = readAccounts();
   const normalizedEmail = email.trim().toLowerCase();
   if (accounts.some((account) => account.email === normalizedEmail)) {
@@ -25,9 +25,17 @@ export async function registerAccount({ name, email, password }) {
     name: name.trim(),
     email: normalizedEmail,
     passwordHash: await passwordHash(password),
+    role,
+    schoolNumber: schoolNumber.trim(),
+    ...(role === "student" ? {
+      classNumber: classNumber.trim(),
+      classDirection: classDirection.trim(),
+      birthDate,
+    } : { subject: subject.trim() }),
   };
   localStorage.setItem(ACCOUNTS_KEY, JSON.stringify([...accounts, account]));
-  return { name: account.name, email: account.email };
+  const { passwordHash: _, ...profile } = account;
+  return profile;
 }
 
 export async function loginAccount({ email, password }) {
@@ -37,5 +45,6 @@ export async function loginAccount({ email, password }) {
     (item) => item.email === normalizedEmail && item.passwordHash === hash,
   );
   if (!account) throw new Error("Неверная почта или пароль.");
-  return { name: account.name, email: account.email };
+  const { passwordHash: _, ...profile } = account;
+  return profile;
 }

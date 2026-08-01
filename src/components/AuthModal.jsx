@@ -6,6 +6,12 @@ export default function AuthModal({ open, onClose, onLogin }) {
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [role, setRole] = useState("student");
+  const [classNumber, setClassNumber] = useState("");
+  const [classDirection, setClassDirection] = useState("");
+  const [birthDate, setBirthDate] = useState("");
+  const [schoolNumber, setSchoolNumber] = useState("");
+  const [subject, setSubject] = useState("");
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
 
@@ -17,7 +23,7 @@ export default function AuthModal({ open, onClose, onLogin }) {
     setLoading(true);
     try {
       const account = register
-        ? await registerAccount({ name, email, password })
+        ? await registerAccount({ name, email, password, role, classNumber, classDirection, birthDate, schoolNumber, subject })
         : await loginAccount({ email, password });
       onLogin(account);
       setPassword("");
@@ -37,10 +43,29 @@ export default function AuthModal({ open, onClose, onLogin }) {
         <p>{register ? "Создай аккаунт и начни изучать физику" : "Войди в свой аккаунт ФизикаКосмос"}</p>
         <form onSubmit={submit}>
           {register && (
-            <label>
-              Имя пользователя
-              <input value={name} onChange={(event) => setName(event.target.value)} required />
-            </label>
+            <>
+              <div className="role-selector" aria-label="Тип пользователя">
+                <button type="button" className={role === "student" ? "active" : ""} onClick={() => setRole("student")}>🎓 Школьник</button>
+                <button type="button" className={role === "teacher" ? "active" : ""} onClick={() => setRole("teacher")}>👩‍🏫 Учитель</button>
+              </div>
+              <label>
+                ФИО
+                <input value={name} onChange={(event) => setName(event.target.value)} required />
+              </label>
+              {role === "student" ? (
+                <div className="registration-fields">
+                  <label>Номер класса<input placeholder="Например, 9А" value={classNumber} onChange={(event) => setClassNumber(event.target.value)} required /></label>
+                  <label>Направление класса<input placeholder="Физико-математическое" value={classDirection} onChange={(event) => setClassDirection(event.target.value)} required /></label>
+                  <label>Дата рождения<input type="date" value={birthDate} onChange={(event) => setBirthDate(event.target.value)} required /></label>
+                  <label>Номер школы<input placeholder="Например, 57" value={schoolNumber} onChange={(event) => setSchoolNumber(event.target.value)} required /></label>
+                </div>
+              ) : (
+                <div className="registration-fields">
+                  <label>Преподаваемый предмет<input placeholder="Например, физика" value={subject} onChange={(event) => setSubject(event.target.value)} required /></label>
+                  <label>Номер школы<input placeholder="Например, 57" value={schoolNumber} onChange={(event) => setSchoolNumber(event.target.value)} required /></label>
+                </div>
+              )}
+            </>
           )}
           <label>
             Электронная почта
