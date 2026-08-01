@@ -10,6 +10,7 @@ import {
   newtonForce,
   newtonMass,
   ohmCurrent,
+  pendulumAngle,
   pendulumPeriod,
   projectileMetrics,
   refractedAngle,
@@ -60,7 +61,12 @@ test("Snell's law and total internal reflection", () => {
 });
 
 test("pendulum period is independent of mass", () => {
-  closeTo(pendulumPeriod(1, 9.81), 2.0060666807106475);
+  const earthPeriod = pendulumPeriod(1, 9.81);
+  closeTo(earthPeriod, 2.0060666807106475);
+  closeTo(pendulumPeriod(4, 9.81), earthPeriod * 2);
+  closeTo(pendulumPeriod(1, 9.81 * 4), earthPeriod / 2);
+  closeTo(pendulumAngle(10, 1, 9.81, 0), 10);
+  closeTo(pendulumAngle(10, 1, 9.81, earthPeriod / 2), -10);
 });
 
 test("projectile metrics at 45 degrees", () => {
