@@ -14,10 +14,16 @@ export async function onRequestPost({ request, env }) {
   try {
     const body = await request.json();
 
+    const messages = Array.isArray(body.messages) ? body.messages : [];
+
+    if (messages.length > 30) {
+      return json({ error: "Слишком длинная история диалога." }, 400);
+    }
+
     const answer = await requestPhysicsAnswer({
       apiKey: env.OPENAI_API_KEY,
       model: env.OPENAI_MODEL || "gpt-4o-mini",
-      messages: Array.isArray(body.messages) ? body.messages : [],
+      messages,
     });
 
     return json({ answer });

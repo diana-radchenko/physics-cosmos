@@ -116,6 +116,20 @@ function TopicCard({ topic, open, onToggle }) {
             <section className="formula-panel">
               <span>Формула</span>
               <strong>{topic.formula}</strong>
+              <div className="formula-symbols">
+                <h4>Обозначения</h4>
+                <dl>
+                  {topic.symbols.map(({ symbol, meaning, unit }) => (
+                    <div className="formula-symbol" key={symbol}>
+                      <dt>{symbol}</dt>
+                      <dd>
+                        {meaning}
+                        {unit && <span className="formula-unit">, {unit}</span>}
+                      </dd>
+                    </div>
+                  ))}
+                </dl>
+              </div>
             </section>
           </div>
           <h3>🔬 Интерактивная симуляция</h3>
