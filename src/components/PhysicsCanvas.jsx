@@ -16,13 +16,14 @@ import {
 } from "../physics/calculations";
 
 const HEIGHT = 300;
+const EARTH_MASS_KG = 5.972e24;
 
 const opticalMedia = [
-  { value: "air", n: 1, name: "Воздух", label: "Воздух — n = 1,00" },
-  { value: "water", n: 1.333, name: "Вода", label: "Вода — n = 1,333" },
-  { value: "ice", n: 1.31, name: "Лёд", label: "Лёд — n = 1,31" },
-  { value: "glass", n: 1.57, name: "Стекло", label: "Стекло — n = 1,57" },
-  { value: "diamond", n: 2.417, name: "Алмаз", label: "Алмаз — n = 2,417" },
+  { value: "air", n: 1, name: "Воздух", label: "Воздух" },
+  { value: "water", n: 1.33, name: "Вода", label: "Вода" },
+  { value: "ice", n: 1.31, name: "Лёд", label: "Лёд" },
+  { value: "glass", n: 1.5, name: "Стекло", label: "Стекло" },
+  { value: "diamond", n: 2.42, name: "Алмаз", label: "Алмаз" },
 ];
 
 const simulationConfig = {
@@ -45,15 +46,15 @@ const simulationConfig = {
       { key: "medium2", label: "Вторая среда (в неё входит свет)", type: "select", options: opticalMedia },
       { key: "angle", label: "Угол падения θ₁", min: 0, max: 80, step: 1, unit: "°" },
     ],
-    initial: { medium1: "air", n1: 1, medium2: "water", n2: 1.333, angle: 35 },
+    initial: { medium1: "air", n1: 1, medium2: "water", n2: 1.33, angle: 35 },
   },
   gravity: {
     controls: [
-      { key: "m1", label: "Масса m₁", min: 1, max: 20, step: 1, unit: "×10²⁴ кг" },
-      { key: "m2", label: "Масса m₂", min: 1, max: 20, step: 1, unit: "×10²⁴ кг" },
+      { key: "m1", label: "Масса m₁", min: 0.5, max: 5, step: 0.1, unit: "массы Земли" },
+      { key: "m2", label: "Масса m₂", min: 0.5, max: 5, step: 0.1, unit: "массы Земли" },
       { key: "distance", label: "Расстояние r", min: 2, max: 20, step: 1, unit: "×10⁷ м" },
     ],
-    initial: { m1: 6, m2: 4, distance: 8 },
+    initial: { m1: 1, m2: 0.7, distance: 8 },
   },
   waves: {
     controls: [
@@ -216,8 +217,11 @@ function getResults(type, values) {
     return [`θ₂ = ${formatNumber(theta2, 1)}°`, `n₁ sin θ₁ = n₂ sin θ₂`];
   }
   if (type === "gravity") {
-    const force = gravityForce(values.m1 * 1e24, values.m2 * 1e24, values.distance * 1e7);
-    return [`F = ${formatNumber(force)} Н`, "G = 6,67 × 10⁻¹¹ Н·м²/кг² (постоянная)"];
+    const force = gravityForce(values.m1 * EARTH_MASS_KG, values.m2 * EARTH_MASS_KG, values.distance * 1e7);
+    return [
+      `F = ${formatNumber(force)} Н`,
+      "Массы указаны в массах Земли · G — постоянная",
+    ];
   }
   if (type === "waves") {
     return [`v = λf = ${formatNumber(waveSpeed(values.wavelength, values.frequency))} м/с`, `T = ${formatNumber(1 / values.frequency)} с`];
@@ -340,8 +344,8 @@ function drawSimulation(context, width, type, color, values, time, newtonMotion)
     const centerX = width / 2;
     const left = centerX - visualDistance / 2;
     const right = centerX + visualDistance / 2;
-    const r1 = 18 + values.m1 * 1.3;
-    const r2 = 18 + values.m2 * 1.3;
+    const r1 = 20 + values.m1 * 6;
+    const r2 = 20 + values.m2 * 6;
     context.fillStyle = "#06b6d4";
     context.beginPath();
     context.arc(left, 150, r1, 0, Math.PI * 2);
