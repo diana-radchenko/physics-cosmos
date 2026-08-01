@@ -46,7 +46,7 @@ export default function AuthModal({ open, onClose, onLogin, locale }) {
         <form onSubmit={submit}>
           {register && (
             <>
-              <div className="role-selector" aria-label="Тип пользователя">
+              <div className="role-selector" aria-label={l("Тип пользователя", "User type")}>
                 <button type="button" className={role === "student" ? "active" : ""} onClick={() => setRole("student")}>🎓 {l("Школьник", "Student")}</button>
                 <button type="button" className={role === "teacher" ? "active" : ""} onClick={() => setRole("teacher")}>👩‍🏫 {l("Учитель", "Teacher")}</button>
               </div>
@@ -71,7 +71,7 @@ export default function AuthModal({ open, onClose, onLogin, locale }) {
           )}
           <label>
             {l("Электронная почта", "Email")}
-            <input type="email" placeholder="твой@email.com" value={email} onChange={(event) => setEmail(event.target.value)} required />
+            <input type="email" placeholder={l("твой@email.com", "you@email.com")} value={email} onChange={(event) => setEmail(event.target.value)} required />
           </label>
           <label>
             {l("Пароль", "Password")}

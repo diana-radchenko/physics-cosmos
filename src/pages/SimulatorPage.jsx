@@ -2,10 +2,10 @@ import { useEffect, useRef, useState } from "react";
 import { text } from "../i18n.js";
 
 const shapeStyles = {
-  circle: { label: "Круг", symbol: "●" },
-  square: { label: "Квадрат", symbol: "■" },
-  triangle: { label: "Треугольник", symbol: "▲" },
-  star: { label: "Звезда", symbol: "★" },
+  circle: { label: "Круг", labelEn: "Circle", symbol: "●" },
+  square: { label: "Квадрат", labelEn: "Square", symbol: "■" },
+  triangle: { label: "Треугольник", labelEn: "Triangle", symbol: "▲" },
+  star: { label: "Звезда", labelEn: "Star", symbol: "★" },
 };
 
 const colors = ["#22d3ee", "#8b5cf6", "#ec4899", "#10b981", "#f59e0b"];
@@ -17,35 +17,47 @@ const experiments = [
     id: "sandbox",
     icon: "🧪",
     title: "Песочница",
+    titleEn: "Sandbox",
     description: "Добавляй собственные объекты и вручную настраивай физику.",
+    descriptionEn: "Add your own objects and adjust the physics manually.",
     law: "Свободный эксперимент",
+    lawEn: "Free experiment",
   },
   {
     id: "fall",
     icon: "🍎",
     title: "Свободное падение",
+    titleEn: "Free fall",
     description: "Тела разной массы падают с одинаковым ускорением.",
+    descriptionEn: "Objects of different masses fall with the same acceleration.",
     law: "a = g",
   },
   {
     id: "collision",
     icon: "💥",
     title: "Столкновение",
+    titleEn: "Collision",
     description: "Два тела обмениваются импульсом при почти упругом ударе.",
+    descriptionEn: "Two objects exchange momentum in a nearly elastic collision.",
     law: "m₁v₁ + m₂v₂ = const",
   },
   {
     id: "moon",
     icon: "🌙",
     title: "Лунная гравитация",
+    titleEn: "Lunar gravity",
     description: "Слабая гравитация создаёт высокие и долгие прыжки.",
+    descriptionEn: "Weak gravity produces high, long-lasting jumps.",
     law: "gₗ ≈ 1,62 м/с²",
+    lawEn: "gₗ ≈ 1.62 m/s²",
   },
   {
     id: "weightless",
     icon: "🛰️",
     title: "Невесомость",
+    titleEn: "Weightlessness",
     description: "Без гравитации тела равномерно движутся и сталкиваются.",
+    descriptionEn: "Without gravity, objects move uniformly and collide.",
     law: "F = 0 → v = const",
   },
 ];
@@ -336,7 +348,7 @@ export default function SimulatorPage({ locale }) {
 
   const addObject = (event) => {
     if (objectsRef.current.length >= MAX_OBJECTS) {
-      setMessage(`Достигнут безопасный предел: ${MAX_OBJECTS} объектов`);
+      setMessage(l(`Достигнут безопасный предел: ${MAX_OBJECTS} объектов`, `Safety limit reached: ${MAX_OBJECTS} objects`));
       return;
     }
 
@@ -409,13 +421,14 @@ export default function SimulatorPage({ locale }) {
     setPaused(false);
     setObjectCount(objects.length);
     setActiveExperiment(experimentId);
-    setMessage(experimentId === "sandbox" ? "Песочница готова" : `Запущен опыт «${experiments.find((item) => item.id === experimentId).title}»`);
+    const selected = experiments.find((item) => item.id === experimentId);
+    setMessage(experimentId === "sandbox" ? l("Песочница готова", "Sandbox ready") : l(`Запущен опыт «${selected.title}»`, `Experiment “${selected.titleEn}” started`));
   };
 
   const clearObjects = () => {
     objectsRef.current = [];
     setObjectCount(0);
-    setMessage("Поле очищено");
+    setMessage(l("Поле очищено", "Canvas cleared"));
   };
 
   const save = () => {
@@ -426,12 +439,12 @@ export default function SimulatorPage({ locale }) {
         settings: { gravity, friction, elasticity, mass },
       }),
     );
-    setMessage("Симуляция сохранена!");
+    setMessage(l("Симуляция сохранена!", "Simulation saved!"));
   };
 
   const share = async () => {
     await navigator.clipboard?.writeText(`${location.origin}${location.pathname}#/simulator`);
-    setMessage("Ссылка скопирована!");
+    setMessage(l("Ссылка скопирована!", "Link copied!"));
   };
 
   return (
@@ -448,7 +461,7 @@ export default function SimulatorPage({ locale }) {
             <p className="eyebrow">{l("Готовые опыты", "Ready experiments")}</p>
             <h2>{l("Выбери физический сценарий", "Choose a physics scenario")}</h2>
           </div>
-          <p>{experiments.find((item) => item.id === activeExperiment).description}</p>
+          <p>{locale === "en" ? experiments.find((item) => item.id === activeExperiment).descriptionEn : experiments.find((item) => item.id === activeExperiment).description}</p>
         </div>
         <div className="experiment-buttons">
           {experiments.map((experiment) => (
@@ -458,8 +471,8 @@ export default function SimulatorPage({ locale }) {
               onClick={() => loadExperiment(experiment.id)}
             >
               <span>{experiment.icon}</span>
-              <strong>{experiment.title}</strong>
-              <small>{experiment.law}</small>
+              <strong>{locale === "en" ? experiment.titleEn : experiment.title}</strong>
+              <small>{locale === "en" ? (experiment.lawEn || experiment.law) : experiment.law}</small>
             </button>
           ))}
         </div>
@@ -470,50 +483,50 @@ export default function SimulatorPage({ locale }) {
           <div className="simulation-panel-header">
             <div>
               <h2>{l("Область симуляции", "Simulation area")}</h2>
-              <small>{experiments.find((item) => item.id === activeExperiment).title} · Объектов: {objectCount}/{MAX_OBJECTS}</small>
+              <small>{locale === "en" ? experiments.find((item) => item.id === activeExperiment).titleEn : experiments.find((item) => item.id === activeExperiment).title} · {l("Объектов", "Objects")}: {objectCount}/{MAX_OBJECTS}</small>
             </div>
             <div className="simulation-actions">
-              <button className={paused ? "play-control paused" : "play-control"} onClick={() => setPaused(!paused)} title={paused ? "Продолжить" : "Пауза"}>
+              <button className={paused ? "play-control paused" : "play-control"} onClick={() => setPaused(!paused)} title={paused ? l("Продолжить", "Resume") : l("Пауза", "Pause")}>
                 {paused ? "▶" : "Ⅱ"}
               </button>
-              <button className="delete-control" onClick={clearObjects} title="Удалить все объекты">⌫</button>
+              <button className="delete-control" onClick={clearObjects} title={l("Удалить все объекты", "Delete all objects")}>⌫</button>
             </div>
           </div>
           <div className="simulation-stage">
-            <canvas ref={canvasRef} onClick={addObject} aria-label="Интерактивная область физической симуляции" />
+            <canvas ref={canvasRef} onClick={addObject} aria-label={l("Интерактивная область физической симуляции", "Interactive physics simulation area")} />
             {objectCount === 0 && <p className="stage-hint">💡 {l("Кликай на холст, чтобы добавить объекты", "Click the canvas to add objects")}</p>}
           </div>
         </div>
 
         <aside className="simulator-sidebar">
           <section className="tool-panel glass-panel">
-            <h2>Объекты</h2>
-            <h3>Тип объекта</h3>
+            <h2>{l("Объекты", "Objects")}</h2>
+            <h3>{l("Тип объекта", "Object type")}</h3>
             <div className="shape-buttons">
               {Object.entries(shapeStyles).map(([id, item]) => (
                 <button key={id} className={shape === id ? "selected" : ""} onClick={() => setShape(id)}>
-                  <span>{item.symbol}</span>{item.label}
+                  <span>{item.symbol}</span>{locale === "en" ? item.labelEn : item.label}
                 </button>
               ))}
             </div>
             <label>
-              Масса: {mass} кг
+              {l("Масса", "Mass")}: {mass} {l("кг", "kg")}
               <input type="range" min="1" max="20" step="1" value={mass} onChange={(event) => setMass(Number(event.target.value))} />
             </label>
           </section>
 
           <section className="physics-settings glass-panel">
-            <h2>Физика</h2>
+            <h2>{l("Физика", "Physics")}</h2>
             <label>
-              Гравитация: {gravity.toFixed(1)}
+              {l("Гравитация", "Gravity")}: {gravity.toFixed(1)}
               <input type="range" min="0" max="2.5" step="0.1" value={gravity} onChange={(event) => setGravity(Number(event.target.value))} />
             </label>
             <label>
-              Трение: {friction.toFixed(2)}
+              {l("Трение", "Friction")}: {friction.toFixed(2)}
               <input type="range" min="0" max="1" step="0.01" value={friction} onChange={(event) => setFriction(Number(event.target.value))} />
             </label>
             <label>
-              Упругость: {elasticity.toFixed(2)}
+              {l("Упругость", "Elasticity")}: {elasticity.toFixed(2)}
               <input type="range" min="0" max="1" step="0.01" value={elasticity} onChange={(event) => setElasticity(Number(event.target.value))} />
             </label>
           </section>

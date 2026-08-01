@@ -8,10 +8,10 @@ import { normalizeMathMarkdown } from "../utils/mathText.js";
 import { text } from "../i18n.js";
 
 const suggestions = [
-  "Объясни закон сохранения энергии",
-  "Как рассчитать траекторию броска?",
-  "Что показывает закон Ома?",
-  "Как работает закон Гука?",
+  ["Объясни закон сохранения энергии", "Explain the law of conservation of energy"],
+  ["Как рассчитать траекторию броска?", "How do I calculate a projectile's trajectory?"],
+  ["Что показывает закон Ома?", "What does Ohm's law describe?"],
+  ["Как работает закон Гука?", "How does Hooke's law work?"],
 ];
 
 export default function AiPage({ locale }) {
@@ -19,7 +19,20 @@ export default function AiPage({ locale }) {
   const [messages, setMessages] = useState([
     {
       from: "ai",
-      text: `# 👋 Привет!
+      text: locale === "en" ? `# 👋 Hello!
+
+I am your AI tutor for **school physics**.
+
+I can:
+
+- explain topics in simple language;
+- solve problems step by step;
+- show formulas;
+- check units;
+- perform calculations;
+- explain every step of a solution.
+
+Type your question below 👇` : `# 👋 Привет!
 
 Я AI-помощник по **школьной физике**.
 
@@ -70,7 +83,7 @@ export default function AiPage({ locale }) {
       const data = await response.json();
 
       if (!response.ok) {
-        throw new Error(data.error || "Не удалось получить ответ AI.");
+        throw new Error(data.error || l("Не удалось получить ответ AI.", "Could not get an AI response."));
       }
 
       setMessages((current) => [
@@ -88,7 +101,7 @@ export default function AiPage({ locale }) {
           error: true,
           text:
             error.message ||
-            "Не удалось получить ответ AI.",
+            l("Не удалось получить ответ AI.", "Could not get an AI response."),
         },
       ]);
     } finally {
@@ -115,8 +128,8 @@ export default function AiPage({ locale }) {
           <span>✦</span>
 
           <div>
-            <strong>AI Помощник</strong>
-            <small>Школьная физика</small>
+            <strong>{l("AI Помощник", "AI Tutor")}</strong>
+            <small>{l("Школьная физика", "School physics")}</small>
           </div>
         </div>
 
@@ -182,20 +195,20 @@ export default function AiPage({ locale }) {
               <span />
               <span />
               <span />
-              Думаю над решением...
+              {l("Думаю над решением...", "Working on the solution...")}
             </div>
           )}
 
         </div>
 
         <div className="suggestion-row">
-          {suggestions.map((item) => (
+          {suggestions.map(([ru, en]) => (
             <button
-              key={item}
+              key={ru}
               disabled={loading}
-              onClick={() => ask(item)}
+              onClick={() => ask(l(ru, en))}
             >
-              {item}
+              {l(ru, en)}
             </button>
           ))}
         </div>

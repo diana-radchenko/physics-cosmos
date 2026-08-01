@@ -3,15 +3,15 @@ import { text } from "../i18n.js";
 
 const directories = {
   friends: [
-    { id: "friend-alex", icon: "👨‍🎓", name: "Александр Петров", details: "Изучает механику", online: true },
-    { id: "friend-maria", icon: "👩‍🔬", name: "Мария Сидорова", details: "Увлекается оптикой", online: true },
-    { id: "friend-ivan", icon: "🧑‍🚀", name: "Иван Кузнецов", details: "Готовится к олимпиаде", online: false },
-    { id: "friend-sofia", icon: "👩‍💻", name: "София Новикова", details: "Изучает электричество", online: true },
+    { id: "friend-alex", icon: "👨‍🎓", name: "Александр Петров", nameEn: "Alexander Petrov", details: "Изучает механику", detailsEn: "Studying mechanics", online: true },
+    { id: "friend-maria", icon: "👩‍🔬", name: "Мария Сидорова", nameEn: "Maria Sidorova", details: "Увлекается оптикой", detailsEn: "Interested in optics", online: true },
+    { id: "friend-ivan", icon: "🧑‍🚀", name: "Иван Кузнецов", nameEn: "Ivan Kuznetsov", details: "Готовится к олимпиаде", detailsEn: "Preparing for a physics contest", online: false },
+    { id: "friend-sofia", icon: "👩‍💻", name: "София Новикова", nameEn: "Sofia Novikova", details: "Изучает электричество", detailsEn: "Studying electricity", online: true },
   ],
   teachers: [
-    { id: "teacher-elena", icon: "👩‍🏫", name: "Елена Викторовна", details: "Механика и термодинамика", online: true },
-    { id: "teacher-sergey", icon: "👨‍🏫", name: "Сергей Андреевич", details: "Электродинамика", online: false },
-    { id: "teacher-olga", icon: "👩‍🔬", name: "Ольга Михайловна", details: "Оптика и астрономия", online: true },
+    { id: "teacher-elena", icon: "👩‍🏫", name: "Елена Викторовна", nameEn: "Elena Viktorovna", details: "Механика и термодинамика", detailsEn: "Mechanics and thermodynamics", online: true },
+    { id: "teacher-sergey", icon: "👨‍🏫", name: "Сергей Андреевич", nameEn: "Sergey Andreevich", details: "Электродинамика", detailsEn: "Electrodynamics", online: false },
+    { id: "teacher-olga", icon: "👩‍🔬", name: "Ольга Михайловна", nameEn: "Olga Mikhailovna", details: "Оптика и астрономия", detailsEn: "Optics and astronomy", online: true },
   ],
 };
 
@@ -95,7 +95,7 @@ export default function ContactsPage({ type, username, onRequireLogin, locale })
                 const added = contactIds.includes(person.id);
                 return <article className="person-row" key={person.id}>
                   <span className="avatar">{person.icon}</span>
-                  <div><strong>{person.name}</strong><small>{person.details} · {person.online ? "В сети" : "Не в сети"}</small></div>
+                  <div><strong>{locale === "en" ? person.nameEn : person.name}</strong><small>{locale === "en" ? person.detailsEn : person.details} · {person.online ? l("В сети", "Online") : l("Не в сети", "Offline")}</small></div>
                   <button className="primary-button small-button" disabled={added} onClick={() => addContact(person.id)}>{added ? l("Добавлен", "Added") : l("Добавить", "Add")}</button>
                 </article>;
               })}
@@ -106,13 +106,13 @@ export default function ContactsPage({ type, username, onRequireLogin, locale })
             <aside className="contact-list">
               {contacts.length ? contacts.map((person) => (
                 <button key={person.id} className={activeId === person.id ? "active" : ""} onClick={() => setActiveId(person.id)}>
-                  <span className="avatar">{person.icon}</span><span><strong>{person.name}</strong><small>{person.online ? "В сети" : "Не в сети"}</small></span>
+                  <span className="avatar">{person.icon}</span><span><strong>{locale === "en" ? person.nameEn : person.name}</strong><small>{person.online ? l("В сети", "Online") : l("Не в сети", "Offline")}</small></span>
                 </button>
               )) : <div className="empty-mini"><span>👋</span><p>{l("Пока никого нет", "No contacts yet")}</p><button className="text-button" onClick={() => setMode("add")}>{l("Добавить контакт", "Add contact")}</button></div>}
             </aside>
             <div className="contact-dialog">
               {active ? <>
-                <header><span className="avatar">{active.icon}</span><div><strong>{active.name}</strong><small>{active.online ? "В сети" : "Не в сети"}</small></div></header>
+                <header><span className="avatar">{active.icon}</span><div><strong>{locale === "en" ? active.nameEn : active.name}</strong><small>{active.online ? l("В сети", "Online") : l("Не в сети", "Offline")}</small></div></header>
                 <div className="dialog-body">
                   <div className="message ai">{l("Здравствуйте! Напишите сообщение — оно сохранится в вашем личном кабинете.", "Hello! Write a message — it will be saved in your account.")}</div>
                   {(chats[active.id] || []).map((message) => <div className="message user" key={message.id}>{message.text}</div>)}

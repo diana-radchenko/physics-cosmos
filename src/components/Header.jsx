@@ -7,7 +7,7 @@ export default function Header({ currentPage, navigate, username, onLogin, onLog
       <button className="brand" onClick={() => navigate("home")} aria-label={text(locale, "На главную", "Home")}>
         <span className="brand-mark">⚛</span>
         <span>
-          <strong>ФизикаКосмос</strong>
+          <strong>{text(locale, "ФизикаКосмос", "Physics Cosmos")}</strong>
           <small>{text(locale, "Изучай физику с удовольствием", "Enjoy learning physics")}</small>
         </span>
       </button>
