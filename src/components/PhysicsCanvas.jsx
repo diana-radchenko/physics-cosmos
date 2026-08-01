@@ -220,7 +220,7 @@ function getResults(type, values) {
     const force = gravityForce(values.m1 * EARTH_MASS_KG, values.m2 * EARTH_MASS_KG, values.distance * 1e7);
     return [
       `F = ${formatNumber(force)} Н`,
-      "Массы указаны в массах Земли · G — постоянная",
+      "2r → F/4 · r/2 → 4F · G — постоянная",
     ];
   }
   if (type === "waves") {
@@ -340,28 +340,59 @@ function drawSimulation(context, width, type, color, values, time, newtonMotion)
     context.fillText(opticalMediumName(values.medium1, values.n1), 18, 32);
     context.fillText(opticalMediumName(values.medium2, values.n2), 18, 185);
   } else if (type === "gravity") {
-    const visualDistance = 90 + (values.distance - 2) * Math.min(13, (width - 250) / 18);
     const centerX = width / 2;
-    const left = centerX - visualDistance / 2;
-    const right = centerX + visualDistance / 2;
-    const r1 = 20 + values.m1 * 6;
-    const r2 = 20 + values.m2 * 6;
+    const centerY = 145;
+    const orbitRadius = 62 + (values.distance - 2) / 18 * Math.min(115, width / 4);
+    const relativeSpeed = Math.sqrt(values.m1) / Math.pow(values.distance / 8, 1.5);
+    const orbitAngle = time * 0.55 * relativeSpeed;
+    const satelliteX = centerX + Math.cos(orbitAngle) * orbitRadius;
+    const satelliteY = centerY + Math.sin(orbitAngle) * orbitRadius * 0.38;
+    const planetRadius = 34;
+    const satelliteRadius = 13;
+    const force = gravityForce(
+      values.m1 * EARTH_MASS_KG,
+      values.m2 * EARTH_MASS_KG,
+      values.distance * 1e7,
+    );
+    const referenceForce = gravityForce(EARTH_MASS_KG, EARTH_MASS_KG, 8e7);
+    const forceArrowLength = 24 + 82 * Math.min(1, Math.sqrt(force / referenceForce) / 2);
+    const directionX = centerX - satelliteX;
+    const directionY = centerY - satelliteY;
+    const directionLength = Math.hypot(directionX, directionY) || 1;
+    const arrowStartX = satelliteX + directionX / directionLength * (satelliteRadius + 4);
+    const arrowStartY = satelliteY + directionY / directionLength * (satelliteRadius + 4);
+    const arrowEndX = arrowStartX + directionX / directionLength * forceArrowLength;
+    const arrowEndY = arrowStartY + directionY / directionLength * forceArrowLength;
+
+    context.strokeStyle = "rgba(255,255,255,.25)";
+    context.lineWidth = 1.5;
+    context.setLineDash([6, 6]);
+    context.beginPath();
+    context.ellipse(centerX, centerY, orbitRadius, orbitRadius * 0.38, 0, 0, Math.PI * 2);
+    context.stroke();
+    context.setLineDash([]);
+
+    const glow = context.createRadialGradient(centerX - 10, centerY - 12, 2, centerX, centerY, planetRadius);
+    glow.addColorStop(0, "#67e8f9");
+    glow.addColorStop(1, "#0891b2");
+    context.fillStyle = glow;
+    context.beginPath();
+    context.arc(centerX, centerY, planetRadius, 0, Math.PI * 2);
+    context.fill();
+
     context.fillStyle = "#06b6d4";
     context.beginPath();
-    context.arc(left, 150, r1, 0, Math.PI * 2);
+    context.arc(satelliteX, satelliteY, satelliteRadius, 0, Math.PI * 2);
     context.fill();
-    context.fillStyle = "#f97316";
-    context.beginPath();
-    context.arc(right, 150, r2, 0, Math.PI * 2);
-    context.fill();
-    drawArrow(context, left + r1, 115, centerX - 5, 115, "#fff");
-    drawArrow(context, right - r2, 185, centerX + 5, 185, "#fff");
+
+    drawArrow(context, arrowStartX, arrowStartY, arrowEndX, arrowEndY, "#f8fafc", 3);
     context.fillStyle = "#fff";
     context.font = "14px sans-serif";
     context.textAlign = "center";
-    context.fillText("m₁", left, 155);
-    context.fillText("m₂", right, 155);
-    context.fillText(`r = ${values.distance} × 10⁷ м`, centerX, 245);
+    context.fillText("Планета m₁", centerX, centerY + 5);
+    context.fillText("Спутник m₂", satelliteX, satelliteY - 21);
+    context.fillText("F", (arrowStartX + arrowEndX) / 2, (arrowStartY + arrowEndY) / 2 - 8);
+    context.fillText(`r = ${values.distance} × 10⁷ м`, centerX, 267);
   } else if (type === "waves") {
     const pixelsPerWave = Math.max(55, values.wavelength * 55);
     context.beginPath();
@@ -763,6 +794,24 @@ export default function PhysicsCanvas({ type, color, onNewtonSolveForChange, onO
           ))}
         </div>
         <div className="canvas-actions">
+          {type === "gravity" && (
+            <>
+              <button
+                className="ghost-button"
+                disabled={values.distance <= config.controls[2].min}
+                onClick={() => updateControl(config.controls[2], Math.max(config.controls[2].min, values.distance / 2))}
+              >
+                r / 2 → 4F
+              </button>
+              <button
+                className="ghost-button"
+                disabled={values.distance >= config.controls[2].max}
+                onClick={() => updateControl(config.controls[2], Math.min(config.controls[2].max, values.distance * 2))}
+              >
+                2r → F / 4
+              </button>
+            </>
+          )}
           <button className="secondary-button" onClick={() => setPaused((current) => !current)}>
             {paused ? "▶ Продолжить" : "⏸ Пауза"}
           </button>
