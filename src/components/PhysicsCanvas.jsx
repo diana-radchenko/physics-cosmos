@@ -85,7 +85,7 @@ const simulationConfig = {
   pendulum: {
     controls: [
       { key: "length", label: "Длина L", min: 0.4, max: 3, step: 0.1, unit: "м" },
-      { key: "gravity", label: "Ускорение g", min: 1.62, max: 15, step: 0.01, unit: "м/с²" },
+      { key: "gravity", label: "Постоянное ускорение g", min: 1.62, max: 15, step: 0.01, unit: "м/с²" },
       { key: "initialAngle", label: "Начальный угол θ₀", min: 1, max: 15, step: 1, unit: "°" },
     ],
     initial: { length: 1.5, gravity: 9.81, initialAngle: 10 },
@@ -132,9 +132,9 @@ const simulationConfig = {
     controls: [
       { key: "velocity", label: "Начальная скорость v₀", min: 8, max: 40, step: 1, unit: "м/с" },
       { key: "angle", label: "Угол α", min: 5, max: 85, step: 1, unit: "°" },
-      { key: "gravity", label: "Ускорение g", min: 1.62, max: 15, step: 0.01, unit: "м/с²" },
+      { key: "gravity", label: "Постоянное ускорение g", min: 1.62, max: 15, step: 0.01, unit: "м/с²" },
     ],
-    initial: { velocity: 25, angle: 45, gravity: 9.81 },
+    initial: { velocity: 20, angle: 45, gravity: 9.81 },
   },
   hooke: {
     controls: [
@@ -147,9 +147,9 @@ const simulationConfig = {
   momentum: {
     controls: [
       { key: "m1", label: "Масса m₁", min: 1, max: 8, step: 1, unit: "кг" },
-      { key: "v1", label: "Скорость v₁", min: 1, max: 8, step: 0.5, unit: "м/с" },
+      { key: "v1", label: "Скорость v₁", min: -8, max: 8, step: 0.5, unit: "м/с" },
       { key: "m2", label: "Масса m₂", min: 1, max: 8, step: 1, unit: "кг" },
-      { key: "v2", label: "Скорость v₂", min: -8, max: -1, step: 0.5, unit: "м/с" },
+      { key: "v2", label: "Скорость v₂", min: -8, max: 8, step: 0.5, unit: "м/с" },
       { key: "collision", label: "Тип столкновения", type: "select", options: [
         { value: "elastic", label: "Упругое" },
         { value: "inelastic", label: "Неупругое" },
@@ -289,7 +289,7 @@ function drawGrid(context, width) {
   }
 }
 
-function getResults(type, values) {
+function getResults(type, values, time = 0) {
   if (type === "newton") {
     if (values.solveFor === "mass" && values.mass === null) {
       return ["m не определена: F и a должны иметь одинаковый знак, a ≠ 0", "Связь величин: F = m · a"];
@@ -356,18 +356,44 @@ function getResults(type, values) {
   }
   if (type === "projectile") {
     const metrics = projectileMetrics(values.velocity, values.angle, values.gravity);
-    return [`Время: ${formatNumber(metrics.flightTime)} с · Высота: ${formatNumber(metrics.maxHeight)} м`, `Дальность: ${formatNumber(metrics.range)} м`];
+    return [
+      `Время полёта: ${formatNumber(metrics.flightTime)} с`,
+      `Максимальная высота: ${formatNumber(metrics.maxHeight)} м`,
+      `Дальность: ${formatNumber(metrics.range)} м`,
+      `Ускорение постоянно: aₓ = 0; aᵧ = −g = −${formatNumber(values.gravity, 2)} м/с²`,
+      "Формулы: x = v₀ cos(α) · t; y = v₀ sin(α) · t − gt² / 2",
+    ];
   }
   if (type === "hooke") {
     const metrics = hookeMetrics(values.stiffness, values.mass, values.extension);
-    return [`F = −kx = ${formatNumber(metrics.force)} Н`, `T = ${formatNumber(metrics.period)} с`];
+    const displacement = values.extension * Math.cos(metrics.angularFrequency * time);
+    const force = -values.stiffness * displacement;
+    return [
+      `Текущая деформация: x(t) = ${formatNumber(displacement, 3)} м`,
+      `Текущая сила: F(t) = −kx(t) = ${formatNumber(force, 2)} Н`,
+      `Период: T = ${formatNumber(metrics.period)} с`,
+    ];
   }
   if (type === "momentum") {
     const result = collisionResult(values.m1, values.v1, values.m2, values.v2, values.collision);
-    if (values.collision === "inelastic") {
-      return [`pдо = pпосле = ${formatNumber(result.momentum)} кг·м/с`, `Общая скорость: ${formatNumber(result.v1)} м/с`];
-    }
-    return [`pдо = pпосле = ${formatNumber(result.momentum)} кг·м/с`, `После удара: v₁ = ${formatNumber(result.v1)}, v₂ = ${formatNumber(result.v2)} м/с`];
+    const beforeP1 = values.m1 * values.v1;
+    const beforeP2 = values.m2 * values.v2;
+    const afterP1 = values.m1 * result.v1;
+    const afterP2 = values.m2 * result.v2;
+    const beforeTotal = beforeP1 + beforeP2;
+    const afterTotal = afterP1 + afterP2;
+    const conserved = Math.abs(beforeTotal - afterTotal) < 1e-9;
+    const typeLabel = values.collision === "inelastic" ? "Неупругое" : "Упругое";
+
+    return [
+      `${typeLabel} столкновение`,
+      `До: p₁ + p₂ = ${formatNumber(beforeP1)} + ${formatNumber(beforeP2)} = ${formatNumber(beforeTotal)} кг·м/с`,
+      `После: p₁′ + p₂′ = ${formatNumber(afterP1)} + ${formatNumber(afterP2)} = ${formatNumber(afterTotal)} кг·м/с`,
+      conserved ? "Суммарный импульс сохраняется" : "Ошибка: суммарный импульс не сохраняется",
+      values.collision === "inelastic"
+        ? `Тела движутся вместе: v = ${formatNumber(result.v1)} м/с`
+        : `После удара: v₁′ = ${formatNumber(result.v1)} м/с, v₂′ = ${formatNumber(result.v2)} м/с`,
+    ];
   }
   if (type === "ohm") {
     const current = ohmCurrent(values.voltage, values.resistance);
@@ -845,7 +871,7 @@ function drawSimulation(context, width, type, color, values, time, newtonMotion)
     const groundY = 255;
     const scaleX = Math.max(1, (width - 90) / Math.max(range, 1));
     const scaleY = Math.min(4, 175 / Math.max(maxHeight, 1));
-    const phaseTime = flightTime === 0 ? 0 : time % flightTime;
+    const phaseTime = Math.min(Math.max(time, 0), flightTime);
     const point = (t) => ({
       x: 45 + values.velocity * Math.cos(alpha) * t * scaleX,
       y: groundY - (values.velocity * Math.sin(alpha) * t - values.gravity * t * t / 2) * scaleY,
@@ -864,6 +890,21 @@ function drawSimulation(context, width, type, color, values, time, newtonMotion)
     context.beginPath();
     context.arc(current.x, current.y, 12, 0, Math.PI * 2);
     context.fill();
+
+    const currentX = values.velocity * Math.cos(alpha) * phaseTime;
+    const currentY = Math.max(
+      0,
+      values.velocity * Math.sin(alpha) * phaseTime - values.gravity * phaseTime * phaseTime / 2,
+    );
+    context.fillStyle = "#fff";
+    context.font = "13px sans-serif";
+    context.textAlign = "left";
+    context.fillText(
+      `t = ${formatNumber(phaseTime)} с · x = ${formatNumber(currentX)} м · y = ${formatNumber(currentY)} м`,
+      24,
+      28,
+    );
+
     context.strokeStyle = "#fff";
     context.beginPath();
     context.moveTo(20, groundY + 1);
@@ -893,45 +934,110 @@ function drawSimulation(context, width, type, color, values, time, newtonMotion)
     context.lineTo(equilibriumX, 235);
     context.stroke();
     context.setLineDash([]);
+
+    const force = -values.stiffness * displacement;
+    const arrowScale = Math.min(90, Math.abs(force) * 4);
+    if (Math.abs(force) > 0.01) {
+      const direction = Math.sign(force);
+      drawArrow(
+        context,
+        blockX,
+        centerY - 48,
+        blockX + direction * arrowScale,
+        centerY - 48,
+        "#ffffff",
+        2.5,
+      );
+    }
+
+    context.fillStyle = "#ffffff";
+    context.font = "13px sans-serif";
+    context.textAlign = "left";
+    context.fillText(`x(t) = ${formatNumber(displacement, 3)} м`, 20, 28);
+    context.fillText(`F(t) = ${formatNumber(force, 2)} Н`, 20, 48);
+    context.fillText("Пунктир — положение равновесия", 20, 275);
   } else if (type === "momentum") {
     const elastic = values.collision === "elastic";
     const collision = collisionResult(values.m1, values.v1, values.m2, values.v2, values.collision);
     const out1 = collision.v1;
     const out2 = collision.v2;
-    const scale = Math.min(30, width / 25);
+    const scale = Math.min(24, width / 30);
     const start1 = width * 0.25;
     const start2 = width * 0.75;
     const radius1 = 18 + values.m1 * 2;
     const radius2 = 18 + values.m2 * 2;
-    const closingSpeed = Math.max(0.1, (values.v1 - values.v2) * scale);
-    const collisionTime = Math.max(0.35, (start2 - start1 - radius1 - radius2) / closingSpeed);
-    const cycleDuration = collisionTime + 2.8;
-    const cycle = time % cycleDuration;
-    const before = Math.min(cycle, collisionTime);
-    const after = Math.max(0, cycle - collisionTime);
-    let firstX = start1 + values.v1 * before * scale;
-    let secondX = start2 + values.v2 * before * scale;
-    if (after > 0) {
-      const collisionX = (firstX + secondX) / 2;
-      firstX = collisionX + out1 * after * scale;
-      secondX = elastic ? collisionX + out2 * after * scale : firstX;
+    const relativeSpeed = values.v1 - values.v2;
+    const canCollide = relativeSpeed > 0;
+    const collisionTime = canCollide
+      ? Math.max(0.35, (start2 - start1 - radius1 - radius2) / (relativeSpeed * scale))
+      : Number.POSITIVE_INFINITY;
+    const animationDuration = canCollide ? collisionTime + 3 : 3;
+    const animationTime = canCollide ? Math.min(time, animationDuration) : time;
+    const beforeCollision = animationTime <= collisionTime;
+
+    let firstX;
+    let secondX;
+    if (beforeCollision) {
+      firstX = start1 + values.v1 * animationTime * scale;
+      secondX = start2 + values.v2 * animationTime * scale;
+    } else {
+      const contact1 = start1 + values.v1 * collisionTime * scale;
+      const contact2 = start2 + values.v2 * collisionTime * scale;
+      const elapsedAfter = animationTime - collisionTime;
+      if (elastic) {
+        firstX = contact1 + out1 * elapsedAfter * scale;
+        secondX = contact2 + out2 * elapsedAfter * scale;
+      } else {
+        const joinedX = (contact1 + contact2) / 2;
+        firstX = joinedX + out1 * elapsedAfter * scale - radius2 * 0.45;
+        secondX = joinedX + out1 * elapsedAfter * scale + radius1 * 0.45;
+      }
     }
+
     firstX = Math.max(35, Math.min(width - 35, firstX));
     secondX = Math.max(35, Math.min(width - 35, secondX));
+
+    context.strokeStyle = "rgba(255,255,255,.25)";
+    context.beginPath();
+    context.moveTo(20, 205);
+    context.lineTo(width - 20, 205);
+    context.stroke();
+
     context.fillStyle = "#3b82f6";
     context.beginPath();
     context.arc(firstX, 155, radius1, 0, Math.PI * 2);
     context.fill();
+
     context.fillStyle = "#ec4899";
     context.beginPath();
     context.arc(secondX, 155, radius2, 0, Math.PI * 2);
     context.fill();
+
     context.fillStyle = "#fff";
     context.font = "13px sans-serif";
     context.textAlign = "center";
     context.fillText("m₁", firstX, 160);
     context.fillText("m₂", secondX, 160);
-  } else if (type === "ohm") {
+
+    const currentV1 = beforeCollision ? values.v1 : out1;
+    const currentV2 = beforeCollision ? values.v2 : out2;
+    if (Math.abs(currentV1) > 0.01) {
+      drawArrow(context, firstX, 110, firstX + Math.sign(currentV1) * Math.min(70, Math.abs(currentV1) * 10), 110, "#93c5fd", 2);
+    }
+    if (Math.abs(currentV2) > 0.01) {
+      drawArrow(context, secondX, 110, secondX + Math.sign(currentV2) * Math.min(70, Math.abs(currentV2) * 10), 110, "#f9a8d4", 2);
+    }
+
+    context.textAlign = "left";
+    context.fillText(beforeCollision ? "До столкновения" : "После столкновения", 20, 28);
+    context.fillText(
+      canCollide
+        ? (elastic ? "Упругое: тела разлетаются отдельно" : "Неупругое: тела движутся вместе")
+        : "При выбранных скоростях тела не сближаются",
+      20,
+      50,
+    );
+    } else if (type === "ohm") {
     const current = ohmCurrent(values.voltage, values.resistance);
     const left = 85;
     const right = width - 85;
@@ -939,6 +1045,7 @@ function drawSimulation(context, width, type, color, values, time, newtonMotion)
     const bottom = 220;
     context.strokeStyle = color;
     context.strokeRect(left, top, right - left, bottom - top);
+    // Резистор в верхней части цепи.
     context.fillStyle = "#080d24";
     context.fillRect(width / 2 - 58, top - 15, 116, 30);
     context.strokeStyle = "#ef4444";
@@ -949,6 +1056,25 @@ function drawSimulation(context, width, type, color, values, time, newtonMotion)
       context.lineTo(width / 2 - 43 + segment * 10, top + (segment % 2 ? 10 : -10));
     }
     context.stroke();
+
+    // Источник напряжения: длинная и короткая пластины.
+    const sourceX = left;
+    const sourceY = (top + bottom) / 2;
+    context.fillStyle = "#080d24";
+    context.fillRect(sourceX - 18, sourceY - 34, 36, 68);
+    context.strokeStyle = "#facc15";
+    context.lineWidth = 3;
+    context.beginPath();
+    context.moveTo(sourceX - 10, sourceY - 16);
+    context.lineTo(sourceX + 10, sourceY - 16);
+    context.moveTo(sourceX - 6, sourceY + 13);
+    context.lineTo(sourceX + 6, sourceY + 13);
+    context.stroke();
+    context.fillStyle = "#facc15";
+    context.font = "bold 14px sans-serif";
+    context.textAlign = "center";
+    context.fillText("+", sourceX + 24, sourceY - 12);
+    context.fillText("−", sourceX + 24, sourceY + 18);
     const particleCount = 16;
     const perimeter = 2 * ((right - left) + (bottom - top));
     const direction = current >= 0 ? 1 : -1;
@@ -976,11 +1102,25 @@ function drawSimulation(context, width, type, color, values, time, newtonMotion)
       context.arc(x, y, 3.5, 0, Math.PI * 2);
       context.fill();
     }
+    // Направление условного тока совпадает со знаком I.
     context.fillStyle = "#fff";
     context.font = "15px sans-serif";
     context.textAlign = "center";
     context.fillText(`U = ${values.voltage} В`, width / 2, 270);
     context.fillText(`R = ${values.resistance} Ом`, width / 2, 155);
+    context.fillText(`I = ${formatNumber(current)} А`, width / 2, 42);
+
+    const arrowY = bottom + 24;
+    const arrowStart = width / 2 - 55 * direction;
+    const arrowEnd = width / 2 + 55 * direction;
+    if (Math.abs(current) > 1e-9) {
+      drawArrow(context, arrowStart, arrowY, arrowEnd, arrowY, "#22c55e", 3);
+      context.fillStyle = "#22c55e";
+      context.fillText("направление условного тока", width / 2, arrowY + 22);
+    } else {
+      context.fillStyle = "#94a3b8";
+      context.fillText("ток отсутствует", width / 2, arrowY + 8);
+    }
   }
   context.shadowBlur = 0;
 }
@@ -994,6 +1134,8 @@ export default function PhysicsCanvas({ type, color, onNewtonSolveForChange, onO
   const config = simulationConfig[type] || simulationConfig.newton;
   const [values, setValues] = useState(config.initial);
   const [paused, setPaused] = useState(false);
+  const [displayTime, setDisplayTime] = useState(0);
+  const lastDisplayTimeRef = useRef(0);
 
   useEffect(() => {
     const nextConfig = simulationConfig[type] || simulationConfig.newton;
@@ -1003,6 +1145,8 @@ export default function PhysicsCanvas({ type, color, onNewtonSolveForChange, onO
     previousFrameRef.current = null;
     pausedRef.current = false;
     setPaused(false);
+    setDisplayTime(0);
+    lastDisplayTimeRef.current = 0;
   }, [type]);
 
   useEffect(() => {
@@ -1030,6 +1174,16 @@ export default function PhysicsCanvas({ type, color, onNewtonSolveForChange, onO
       previousFrameRef.current = timestamp;
       if (!pausedRef.current) {
         timeRef.current += delta;
+
+        if (type === "projectile") {
+          const { flightTime } = projectileMetrics(values.velocity, values.angle, values.gravity);
+          if (timeRef.current >= flightTime) {
+            timeRef.current = flightTime;
+            pausedRef.current = true;
+            setPaused(true);
+          }
+        }
+
         if (type === "newton" && values.mass !== null) {
           const motion = newtonMotionRef.current;
           const massWidth = 48 + values.mass * 2.4;
@@ -1046,6 +1200,10 @@ export default function PhysicsCanvas({ type, color, onNewtonSolveForChange, onO
         }
       }
       drawSimulation(context, width, type, color, values, timeRef.current, newtonMotionRef.current);
+      if (type === "hooke" && Math.abs(timeRef.current - lastDisplayTimeRef.current) >= 0.08) {
+        lastDisplayTimeRef.current = timeRef.current;
+        setDisplayTime(timeRef.current);
+      }
       frame = requestAnimationFrame(render);
     };
 
@@ -1059,7 +1217,10 @@ export default function PhysicsCanvas({ type, color, onNewtonSolveForChange, onO
     };
   }, [type, color, values]);
 
-  const results = useMemo(() => getResults(type, values), [type, values]);
+  const results = useMemo(
+    () => getResults(type, values, type === "hooke" ? displayTime : 0),
+    [type, values, displayTime],
+  );
 
   const reset = () => {
     setValues({ ...config.initial });
@@ -1068,6 +1229,8 @@ export default function PhysicsCanvas({ type, color, onNewtonSolveForChange, onO
     timeRef.current = 0;
     newtonMotionRef.current = { position: 50, velocity: 0 };
     setPaused(false);
+    setDisplayTime(0);
+    lastDisplayTimeRef.current = 0;
   };
 
   const updateControl = (control, value) => {
@@ -1103,7 +1266,17 @@ export default function PhysicsCanvas({ type, color, onNewtonSolveForChange, onO
       if (type !== "newton") return next;
       return synchronizeNewton(next, control.key === "solveFor" ? value : next.solveFor);
     });
-    if (type !== "newton") timeRef.current = 0;
+    if (type !== "newton") {
+      timeRef.current = 0;
+      if (type === "hooke") {
+        setDisplayTime(0);
+        lastDisplayTimeRef.current = 0;
+      }
+      if (type === "projectile") {
+        pausedRef.current = false;
+        setPaused(false);
+      }
+    }
   };
 
   return (

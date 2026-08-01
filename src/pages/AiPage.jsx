@@ -4,6 +4,7 @@ import remarkGfm from "remark-gfm";
 import remarkMath from "remark-math";
 import rehypeKatex from "rehype-katex";
 import "katex/dist/katex.min.css";
+import { normalizeMathMarkdown } from "../utils/mathText.js";
 
 const suggestions = [
   "Объясни закон сохранения энергии",
@@ -16,7 +17,20 @@ export default function AiPage() {
   const [messages, setMessages] = useState([
     {
       from: "ai",
-      text: "Привет! Я AI-помощник по физике. Задай мне вопрос — разберёмся вместе 🚀",
+      text: `# 👋 Привет!
+
+Я AI-помощник по **школьной физике**.
+
+Я умею:
+
+- объяснять темы простым языком;
+- решать задачи пошагово;
+- показывать формулы;
+- проверять единицы измерения;
+- выполнять вычисления;
+- объяснять каждый шаг решения.
+
+Напишите свой вопрос 👇`,
     },
   ]);
 
@@ -30,7 +44,10 @@ export default function AiPage() {
 
     const nextMessages = [
       ...messages,
-      { from: "user", text: cleanQuestion },
+      {
+        from: "user",
+        text: cleanQuestion,
+      },
     ];
 
     setMessages(nextMessages);
@@ -58,7 +75,7 @@ export default function AiPage() {
         ...current,
         {
           from: "ai",
-          text: data.answer,
+          text: normalizeMathMarkdown(data.answer),
         },
       ]);
     } catch (error) {
@@ -67,7 +84,9 @@ export default function AiPage() {
         {
           from: "ai",
           error: true,
-          text: error.message || "Не удалось получить ответ AI.",
+          text:
+            error.message ||
+            "Не удалось получить ответ AI.",
         },
       ]);
     } finally {
@@ -77,22 +96,33 @@ export default function AiPage() {
 
   return (
     <section className="section page-section narrow-page">
+
       <div className="section-heading">
         <p className="eyebrow">Персональный учитель</p>
+
         <h1>Спроси у AI</h1>
-        <p>Получи понятное объяснение без сложных слов.</p>
+
+        <p>
+          Пошаговые решения по школьной физике
+          с проверкой единиц измерения,
+          подстановкой чисел
+          и корректным отображением формул.
+        </p>
       </div>
 
       <div className="chat-window ai-window">
+
         <div className="chat-title">
           <span>✦</span>
+
           <div>
             <strong>AI Помощник</strong>
-            <small>Всегда на связи</small>
+            <small>Школьная физика</small>
           </div>
         </div>
 
         <div className="messages">
+
           {messages.map((message, index) => (
             <div
               key={index}
@@ -101,10 +131,49 @@ export default function AiPage() {
               }`}
             >
               <ReactMarkdown
-                remarkPlugins={[remarkGfm, remarkMath]}
-                rehypePlugins={[rehypeKatex]}
+                remarkPlugins={[
+                  remarkGfm,
+                  remarkMath,
+                ]}
+                rehypePlugins={[
+                  rehypeKatex,
+                ]}
+                components={{
+                  code({
+                    inline,
+                    className,
+                    children,
+                    ...props
+                  }) {
+                    return inline ? (
+                      <code
+                        className={className}
+                        {...props}
+                      >
+                        {children}
+                      </code>
+                    ) : (
+                      <pre>
+                        <code
+                          className={className}
+                          {...props}
+                        >
+                          {children}
+                        </code>
+                      </pre>
+                    );
+                  },
+
+                  table({ children }) {
+                    return (
+                      <div className="markdown-table">
+                        <table>{children}</table>
+                      </div>
+                    );
+                  },
+                }}
               >
-                {message.text}
+                {normalizeMathMarkdown(message.text)}
               </ReactMarkdown>
             </div>
           ))}
@@ -113,9 +182,11 @@ export default function AiPage() {
             <div className="message ai thinking-message">
               <span />
               <span />
-              <span /> Думаю над ответом…
+              <span />
+              Думаю над решением...
             </div>
           )}
+
         </div>
 
         <div className="suggestion-row">
@@ -138,19 +209,26 @@ export default function AiPage() {
           }}
         >
           <input
-            disabled={loading}
             value={value}
-            onChange={(event) => setValue(event.target.value)}
-            placeholder="Задай любой вопрос по физике..."
+            disabled={loading}
+            onChange={(event) =>
+              setValue(event.target.value)
+            }
+            placeholder="Введите задачу по физике..."
           />
 
           <button
             className="primary-button"
-            disabled={loading || !value.trim()}
+            disabled={
+              loading || !value.trim()
+            }
           >
-            {loading ? "Отвечаю…" : "Отправить"}
+            {loading
+              ? "Думаю..."
+              : "Отправить"}
           </button>
         </form>
+
       </div>
     </section>
   );
