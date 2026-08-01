@@ -114,13 +114,20 @@ const simulationConfig = {
   },
   magnetism: {
     controls: [
-      { key: "strength", label: "Интенсивность поля", min: 0.5, max: 2, step: 0.1 },
+      { key: "strength", label: "Магнитная индукция B", min: 0.2, max: 2, step: 0.1, unit: "Тл" },
+      { key: "position", label: "Положение магнита", min: 30, max: 70, step: 1, unit: "%" },
       { key: "direction", label: "Ориентация магнита", type: "select", options: [
         { value: 1, label: "N слева, S справа" },
         { value: -1, label: "S слева, N справа" },
       ] },
+      { key: "conductor", label: "Проводник с током", type: "select", options: [
+        { value: "none", label: "Отключён" },
+        { value: "out", label: "Ток к наблюдателю (•)" },
+        { value: "in", label: "Ток от наблюдателя (×)" },
+      ] },
+      { key: "current", label: "Сила тока I", min: 1, max: 10, step: 1, unit: "А" },
     ],
-    initial: { strength: 1, direction: 1 },
+    initial: { strength: 1, position: 50, direction: 1, conductor: "out", current: 5 },
   },
   projectile: {
     controls: [
@@ -212,6 +219,60 @@ function drawArrow(context, fromX, fromY, toX, toY, color, width = 2) {
   addArrowHead(context, toX, toY, Math.atan2(toY - fromY, toX - fromX), color);
 }
 
+function cubicPoint(start, control1, control2, end, progress) {
+  const remainder = 1 - progress;
+  return {
+    x: remainder ** 3 * start.x
+      + 3 * remainder ** 2 * progress * control1.x
+      + 3 * remainder * progress ** 2 * control2.x
+      + progress ** 3 * end.x,
+    y: remainder ** 3 * start.y
+      + 3 * remainder ** 2 * progress * control1.y
+      + 3 * remainder * progress ** 2 * control2.y
+      + progress ** 3 * end.y,
+  };
+}
+
+function cubicTangent(start, control1, control2, end, progress) {
+  const remainder = 1 - progress;
+  return {
+    x: 3 * remainder ** 2 * (control1.x - start.x)
+      + 6 * remainder * progress * (control2.x - control1.x)
+      + 3 * progress ** 2 * (end.x - control2.x),
+    y: 3 * remainder ** 2 * (control1.y - start.y)
+      + 6 * remainder * progress * (control2.y - control1.y)
+      + 3 * progress ** 2 * (end.y - control2.y),
+  };
+}
+
+function drawMagneticFieldLine(context, points, color, lineWidth, pulseProgress) {
+  const [start, control1, control2, end] = points;
+  context.strokeStyle = color;
+  context.lineWidth = lineWidth;
+  context.beginPath();
+  context.moveTo(start.x, start.y);
+  context.bezierCurveTo(control1.x, control1.y, control2.x, control2.y, end.x, end.y);
+  context.stroke();
+
+  const arrowProgress = 0.55;
+  const arrowPoint = cubicPoint(start, control1, control2, end, arrowProgress);
+  const arrowTangent = cubicTangent(start, control1, control2, end, arrowProgress);
+  addArrowHead(
+    context,
+    arrowPoint.x,
+    arrowPoint.y,
+    Math.atan2(arrowTangent.y, arrowTangent.x),
+    color,
+    7,
+  );
+
+  const pulse = cubicPoint(start, control1, control2, end, pulseProgress);
+  context.fillStyle = "#ffffff";
+  context.beginPath();
+  context.arc(pulse.x, pulse.y, 2.5 + lineWidth * 0.45, 0, Math.PI * 2);
+  context.fill();
+}
+
 function drawGrid(context, width) {
   context.strokeStyle = "rgba(255,255,255,.055)";
   context.lineWidth = 1;
@@ -284,7 +345,15 @@ function getResults(type, values) {
     ];
   }
   if (type === "magnetism") {
-    return ["Снаружи магнита линии направлены N → S", `Относительная интенсивность: ${formatNumber(values.strength, 1)}`];
+    const conductorResult = values.conductor === "out"
+      ? "Ток к наблюдателю (•): поле против часовой стрелки"
+      : values.conductor === "in"
+        ? "Ток от наблюдателя (×): поле по часовой стрелке"
+        : "Проводник с током отключён";
+    return [
+      `Поле магнита: N → S · B = ${formatNumber(values.strength, 1)} Тл`,
+      conductorResult,
+    ];
   }
   if (type === "projectile") {
     const metrics = projectileMetrics(values.velocity, values.angle, values.gravity);
@@ -660,30 +729,118 @@ function drawSimulation(context, width, type, color, values, time, newtonMotion)
     context.textAlign = "center";
     context.fillText(`Tравн = ${formatNumber(state.equilibrium, 1)} °C`, width / 2, 291);
   } else if (type === "magnetism") {
-    const centerX = width / 2;
-    const leftPole = values.direction === 1 ? "N" : "S";
-    const rightPole = values.direction === 1 ? "S" : "N";
-    context.fillStyle = values.direction === 1 ? "#ef4444" : "#3b82f6";
-    context.fillRect(centerX - 100, 120, 100, 60);
-    context.fillStyle = values.direction === 1 ? "#3b82f6" : "#ef4444";
-    context.fillRect(centerX, 120, 100, 60);
-    context.fillStyle = "#fff";
-    context.font = "24px sans-serif";
-    context.textAlign = "center";
-    context.fillText(leftPole, centerX - 50, 158);
-    context.fillText(rightPole, centerX + 50, 158);
-    context.strokeStyle = color;
-    context.lineWidth = 1.5 + values.strength;
-    for (let offset = 35; offset <= 105; offset += 35) {
-      [-1, 1].forEach((sign) => {
-        const startX = values.direction === 1 ? centerX - 100 : centerX + 100;
-        const endX = values.direction === 1 ? centerX + 100 : centerX - 100;
-        context.beginPath();
-        context.moveTo(startX, 150);
-        context.bezierCurveTo(startX - values.direction * 80, 150 + sign * offset, endX + values.direction * 80, 150 + sign * offset, endX, 150);
-        context.stroke();
-        addArrowHead(context, endX, 150, values.direction === 1 ? 0 : Math.PI, color, 7);
+    const magnetHalfWidth = Math.min(90, width * 0.2);
+    const maximumFieldSpread = Math.min(88, width * 0.18);
+    const horizontalMargin = Math.min(width / 2, magnetHalfWidth + maximumFieldSpread);
+    const requestedCenterX = width * values.position / 100;
+    const centerX = Math.max(horizontalMargin, Math.min(width - horizontalMargin, requestedCenterX));
+    const centerY = 162;
+    const magnetHeight = 56;
+    const poleFlow = values.direction;
+    const northX = centerX - poleFlow * magnetHalfWidth;
+    const southX = centerX + poleFlow * magnetHalfWidth;
+    const lineCount = 2 + Math.round(values.strength * 1.5);
+    const fieldOpacity = 0.42 + values.strength * 0.22;
+    const fieldColor = `rgba(168, 85, 247, ${Math.min(0.95, fieldOpacity)})`;
+    const fieldWidth = 1.1 + values.strength * 0.75;
+
+    context.shadowBlur = 0;
+    for (let index = 0; index < lineCount; index += 1) {
+      const offset = 34 + index * (62 / Math.max(1, lineCount - 1));
+      [-1, 1].forEach((verticalDirection, sideIndex) => {
+        const start = { x: northX, y: centerY };
+        const end = { x: southX, y: centerY };
+        const spread = Math.min(maximumFieldSpread, 44 + offset * 0.48);
+        const control1 = {
+          x: northX - poleFlow * spread,
+          y: centerY + verticalDirection * offset,
+        };
+        const control2 = {
+          x: southX + poleFlow * spread,
+          y: centerY + verticalDirection * offset,
+        };
+        const pulseProgress = (time * (0.08 + values.strength * 0.04)
+          + (index * 2 + sideIndex) / (lineCount * 2)) % 1;
+        drawMagneticFieldLine(
+          context,
+          [start, control1, control2, end],
+          fieldColor,
+          fieldWidth,
+          pulseProgress,
+        );
       });
+    }
+
+    const leftPole = poleFlow === 1 ? "N" : "S";
+    const rightPole = poleFlow === 1 ? "S" : "N";
+    context.shadowBlur = 15;
+    context.shadowColor = color;
+    context.fillStyle = poleFlow === 1 ? "#ef4444" : "#3b82f6";
+    context.fillRect(centerX - magnetHalfWidth, centerY - magnetHeight / 2, magnetHalfWidth, magnetHeight);
+    context.fillStyle = poleFlow === 1 ? "#3b82f6" : "#ef4444";
+    context.fillRect(centerX, centerY - magnetHeight / 2, magnetHalfWidth, magnetHeight);
+    context.shadowBlur = 0;
+    context.strokeStyle = "rgba(255,255,255,.75)";
+    context.lineWidth = 1.5;
+    context.strokeRect(centerX - magnetHalfWidth, centerY - magnetHeight / 2, magnetHalfWidth * 2, magnetHeight);
+    context.fillStyle = "#fff";
+    context.font = "bold 22px sans-serif";
+    context.textAlign = "center";
+    context.fillText(leftPole, centerX - magnetHalfWidth / 2, centerY + 8);
+    context.fillText(rightPole, centerX + magnetHalfWidth / 2, centerY + 8);
+    context.font = "12px sans-serif";
+    context.fillText("Линии поля вне магнита направлены от N к S", width / 2, 286);
+
+    if (values.conductor !== "none") {
+      const wireX = Math.max(68, width - 76);
+      const wireY = 57;
+      const counterClockwise = values.conductor === "out";
+      const rotationDirection = counterClockwise ? -1 : 1;
+      const currentScale = 0.75 + values.current / 20;
+      const currentColor = "#22d3ee";
+      const circleCount = 2 + Math.round(values.current / 4);
+
+      context.strokeStyle = currentColor;
+      context.lineWidth = 1.2 + values.current / 12;
+      for (let index = 0; index < circleCount; index += 1) {
+        const radius = (14 + index * 10) * currentScale;
+        context.beginPath();
+        context.arc(wireX, wireY, radius, 0, Math.PI * 2);
+        context.stroke();
+
+        const arrowAngle = -Math.PI / 2;
+        const arrowX = wireX + Math.cos(arrowAngle) * radius;
+        const arrowY = wireY + Math.sin(arrowAngle) * radius;
+        const tangentAngle = arrowAngle + rotationDirection * Math.PI / 2;
+        addArrowHead(context, arrowX, arrowY, tangentAngle, currentColor, 6);
+
+        const movingAngle = rotationDirection * time * (0.7 + values.current * 0.08)
+          + index * Math.PI * 0.75;
+        context.fillStyle = "#fff";
+        context.beginPath();
+        context.arc(
+          wireX + Math.cos(movingAngle) * radius,
+          wireY + Math.sin(movingAngle) * radius,
+          2.5,
+          0,
+          Math.PI * 2,
+        );
+        context.fill();
+      }
+
+      context.fillStyle = "#0f172a";
+      context.beginPath();
+      context.arc(wireX, wireY, 13, 0, Math.PI * 2);
+      context.fill();
+      context.strokeStyle = "#fff";
+      context.lineWidth = 2;
+      context.stroke();
+      context.fillStyle = "#fff";
+      context.font = "bold 20px sans-serif";
+      context.textAlign = "center";
+      context.fillText(counterClockwise ? "•" : "×", wireX, wireY + 7);
+      context.font = "11px sans-serif";
+      context.fillText(`I = ${values.current} А`, wireX, 119);
     }
   } else if (type === "projectile") {
     const alpha = values.angle * Math.PI / 180;
