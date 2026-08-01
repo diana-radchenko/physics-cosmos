@@ -344,8 +344,8 @@ function drawSimulation(context, width, type, color, values, time, newtonMotion)
     const centerX = width / 2;
     const left = centerX - visualDistance / 2;
     const right = centerX + visualDistance / 2;
-    const r1 = 18 + values.m1 * 1.3;
-    const r2 = 18 + values.m2 * 1.3;
+    const r1 = 20 + values.m1 * 6;
+    const r2 = 20 + values.m2 * 6;
     context.fillStyle = "#06b6d4";
     context.beginPath();
     context.arc(left, 150, r1, 0, Math.PI * 2);
