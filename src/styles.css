@@ -63,14 +63,14 @@ p { line-height: 1.75; }
 
 .brand { display: flex; align-items: center; gap: 10px; border: 0; background: transparent; cursor: pointer; padding: 0 8px; min-width: 205px; text-align: left; }
 .brand-mark { display: grid; place-items: center; width: 43px; height: 43px; border-radius: 14px; font-size: 1.4rem; background: linear-gradient(135deg, var(--purple), var(--pink)); box-shadow: 0 10px 30px rgba(139, 92, 246, .45); }
-.brand strong { display: block; font-size: 1rem; background: linear-gradient(90deg, var(--cyan), #c084fc, var(--pink)); -webkit-background-clip: text; color: transparent; }
-.brand small, .chat-title small { display: block; margin-top: 2px; color: var(--muted); font-size: .7rem; }
+.brand strong { display: block; font-size: 1.08rem; background: linear-gradient(90deg, var(--cyan), #c084fc, var(--pink)); -webkit-background-clip: text; color: transparent; }
+.brand small, .chat-title small { display: block; margin-top: 2px; color: var(--muted); font-size: .76rem; }
 .main-nav { display: flex; align-items: center; justify-content: center; gap: 5px; flex: 1; }
-.nav-button { display: flex; align-items: center; gap: 6px; border: 1px solid transparent; background: transparent; border-radius: 14px; padding: 10px 11px; font-size: .78rem; cursor: pointer; transition: .2s; white-space: nowrap; }
+.nav-button { display: flex; align-items: center; gap: 7px; border: 1px solid transparent; background: transparent; border-radius: 14px; padding: 11px 12px; font-size: .9rem; font-weight: 700; cursor: pointer; transition: .2s; white-space: nowrap; }
 .nav-button:hover { background: rgba(255, 255, 255, .07); }
 .nav-button.active { background: linear-gradient(135deg, var(--purple), var(--pink)); box-shadow: 0 9px 24px rgba(139, 92, 246, .36); }
 .profile-actions { display: flex; gap: 8px; align-items: center; }
-.user-chip { padding: 10px 13px; border-radius: 13px; background: linear-gradient(135deg, rgba(34, 211, 238, .25), rgba(139, 92, 246, .32)); font-size: .78rem; }
+.user-chip { padding: 10px 13px; border-radius: 13px; background: linear-gradient(135deg, rgba(34, 211, 238, .25), rgba(139, 92, 246, .32)); font-size: .88rem; font-weight: 700; }
 
 .primary-button, .ghost-button, .secondary-button {
   border: 0;
@@ -439,7 +439,7 @@ input[type="range"] { display: block; width: 100%; margin-top: 8px; accent-color
   .brand small { display: none; }
   .brand strong { font-size: .86rem; }
   .brand-mark { width: 38px; height: 38px; }
-  .nav-button { padding: 8px 9px; font-size: .7rem; }
+  .nav-button { padding: 9px 10px; font-size: .79rem; }
   .user-chip { display: none; }
   .feature-grid, .team-grid, .quiz-options, .tips-grid { grid-template-columns: 1fr; }
   .home-showcase { width: calc(100% - 28px); }
