@@ -1,4 +1,4 @@
-export const GRAVITATIONAL_CONSTANT = 6.6743e-11;
+export const GRAVITATIONAL_CONSTANT = 6.67e-11;
 export const COULOMB_CONSTANT = 8.9875e9;
 
 export function newtonAcceleration(force, mass) {
