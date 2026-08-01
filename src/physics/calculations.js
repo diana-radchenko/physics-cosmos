@@ -58,6 +58,59 @@ export function pendulumAngle(initialAngleDegrees, length, gravity, time) {
   return initialAngleDegrees * Math.cos(2 * Math.PI * time / period);
 }
 
+export function heatTransferState({
+  temperature1,
+  temperature2,
+  mass1,
+  mass2,
+  specificHeat1,
+  specificHeat2,
+  conductance,
+  time,
+}) {
+  if (mass1 <= 0 || mass2 <= 0) throw new RangeError("Masses must be positive.");
+  if (specificHeat1 <= 0 || specificHeat2 <= 0) throw new RangeError("Specific heat capacities must be positive.");
+  if (conductance <= 0) throw new RangeError("Thermal conductance must be positive.");
+  if (time < 0) throw new RangeError("Time must be non-negative.");
+
+  const thermalCapacity1 = mass1 * specificHeat1;
+  const thermalCapacity2 = mass2 * specificHeat2;
+  const totalThermalCapacity = thermalCapacity1 + thermalCapacity2;
+  const equilibrium = (
+    thermalCapacity1 * temperature1 + thermalCapacity2 * temperature2
+  ) / totalThermalCapacity;
+  const decayRate = conductance * (1 / thermalCapacity1 + 1 / thermalCapacity2);
+  const temperatureDifference = (
+    temperature1 - temperature2
+  ) * Math.exp(-decayRate * time);
+  const equilibriumReached = Math.abs(temperatureDifference) < 0.05;
+
+  if (equilibriumReached) {
+    return {
+      temperature1: equilibrium,
+      temperature2: equilibrium,
+      equilibrium,
+      heatFlowPower: 0,
+      direction: 0,
+      equilibriumReached: true,
+    };
+  }
+
+  const currentTemperature1 = equilibrium
+    + thermalCapacity2 / totalThermalCapacity * temperatureDifference;
+  const currentTemperature2 = equilibrium
+    - thermalCapacity1 / totalThermalCapacity * temperatureDifference;
+
+  return {
+    temperature1: currentTemperature1,
+    temperature2: currentTemperature2,
+    equilibrium,
+    heatFlowPower: Math.abs(conductance * (currentTemperature1 - currentTemperature2)),
+    direction: Math.sign(currentTemperature1 - currentTemperature2),
+    equilibriumReached: false,
+  };
+}
+
 export function projectileMetrics(velocity, angleDegrees, gravity) {
   if (velocity < 0 || gravity <= 0) throw new RangeError("Velocity must be non-negative and gravity positive.");
   const angle = angleDegrees * Math.PI / 180;

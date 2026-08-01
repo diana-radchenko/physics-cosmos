@@ -5,6 +5,7 @@ import {
   collisionResult,
   coulombForce,
   gravityForce,
+  heatTransferState,
   hookeMetrics,
   newtonAcceleration,
   newtonForce,
@@ -67,6 +68,49 @@ test("pendulum period is independent of mass", () => {
   closeTo(pendulumPeriod(1, 9.81 * 4), earthPeriod / 2);
   closeTo(pendulumAngle(10, 1, 9.81, 0), 10);
   closeTo(pendulumAngle(10, 1, 9.81, earthPeriod / 2), -10);
+});
+
+test("heat flows from warmer to cooler and conserves thermal energy", () => {
+  const parameters = {
+    temperature1: 80,
+    temperature2: 20,
+    mass1: 1,
+    mass2: 2,
+    specificHeat1: 900,
+    specificHeat2: 500,
+    conductance: 150,
+  };
+  const initial = heatTransferState({ ...parameters, time: 0 });
+  const later = heatTransferState({ ...parameters, time: 3 });
+  const faster = heatTransferState({ ...parameters, conductance: 300, time: 3 });
+  const higherCapacity = heatTransferState({
+    ...parameters,
+    mass1: parameters.mass1 * 2,
+    time: 3,
+  });
+  const reversed = heatTransferState({
+    ...parameters,
+    temperature1: 20,
+    temperature2: 80,
+    time: 3,
+  });
+  const equilibrium = heatTransferState({ ...parameters, time: 300 });
+
+  assert.equal(initial.direction, 1);
+  assert.ok(later.temperature1 < parameters.temperature1);
+  assert.ok(later.temperature2 > parameters.temperature2);
+  assert.ok(Math.abs(faster.temperature1 - faster.temperature2) < Math.abs(later.temperature1 - later.temperature2));
+  assert.ok(higherCapacity.temperature1 > later.temperature1);
+  assert.equal(reversed.direction, -1);
+  assert.ok(reversed.temperature1 > 20);
+  assert.ok(reversed.temperature2 < 80);
+  closeTo(
+    parameters.mass1 * parameters.specificHeat1 * (parameters.temperature1 - later.temperature1),
+    parameters.mass2 * parameters.specificHeat2 * (later.temperature2 - parameters.temperature2),
+  );
+  closeTo(equilibrium.temperature1, equilibrium.temperature2);
+  closeTo(equilibrium.equilibrium, (900 * 80 + 1000 * 20) / 1900);
+  assert.equal(equilibrium.equilibriumReached, true);
 });
 
 test("projectile metrics at 45 degrees", () => {
