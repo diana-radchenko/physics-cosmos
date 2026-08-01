@@ -237,7 +237,6 @@ export const navItems = [
   { id: "simulator", label: "Симулятор", icon: "◉" },
   { id: "ai", label: "AI", icon: "✦" },
   { id: "chat", label: "Чат", icon: "💬" },
-  { id: "friendschat", label: "Друзья", icon: "👥" },
-  { id: "friends", label: "Добавить", icon: "＋" },
+  { id: "friends", label: "Друзья", icon: "👥" },
   { id: "about", label: "Обо мне", icon: "ⓘ" },
 ];

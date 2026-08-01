@@ -1,16 +1,31 @@
 import { useState } from "react";
+import { loginAccount, registerAccount } from "../utils/accountStore.js";
 
 export default function AuthModal({ open, onClose, onLogin }) {
   const [register, setRegister] = useState(false);
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [error, setError] = useState("");
+  const [loading, setLoading] = useState(false);
 
   if (!open) return null;
 
-  const submit = (event) => {
+  const submit = async (event) => {
     event.preventDefault();
-    onLogin(name.trim() || email.split("@")[0] || "Исследователь");
+    setError("");
+    setLoading(true);
+    try {
+      const account = register
+        ? await registerAccount({ name, email, password })
+        : await loginAccount({ email, password });
+      onLogin(account);
+      setPassword("");
+    } catch (submitError) {
+      setError(submitError.message);
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -35,12 +50,15 @@ export default function AuthModal({ open, onClose, onLogin }) {
             Пароль
             <input type="password" placeholder="••••••••" value={password} onChange={(event) => setPassword(event.target.value)} required />
           </label>
-          <button className="primary-button wide" type="submit">{register ? "Зарегистрироваться" : "Войти"}</button>
+          {error && <p className="auth-error" role="alert">{error}</p>}
+          <button className="primary-button wide" type="submit" disabled={loading}>
+            {loading ? "Проверяем..." : register ? "Зарегистрироваться" : "Войти"}
+          </button>
         </form>
         <button className="text-button" onClick={() => setRegister(!register)}>
           {register ? "Уже есть аккаунт? Войди" : "Нет аккаунта? Зарегистрируйся"}
         </button>
-        <small className="privacy-note">🔒 Данные сохраняются только в этом браузере.</small>
+        <small className="privacy-note">🔒 Локальный аккаунт: данные сохраняются только в этом браузере.</small>
       </section>
     </div>
   );

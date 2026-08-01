@@ -7,8 +7,7 @@ import PhysicsPage from "./pages/PhysicsPage";
 import SimulatorPage from "./pages/SimulatorPage";
 import AiPage from "./pages/AiPage";
 import CommunityPage from "./pages/CommunityPage";
-import FriendsChatPage from "./pages/FriendsChatPage";
-import FriendsPage from "./pages/FriendsPage";
+import ContactsPage from "./pages/ContactsPage";
 import AboutPage from "./pages/AboutPage";
 
 const pages = {
@@ -17,8 +16,7 @@ const pages = {
   simulator: SimulatorPage,
   ai: AiPage,
   chat: CommunityPage,
-  friendschat: FriendsChatPage,
-  friends: FriendsPage,
+  friends: ContactsPage,
   about: AboutPage,
 };
 
@@ -30,7 +28,10 @@ function pageFromHash() {
 export default function App() {
   const [page, setPage] = useState(pageFromHash);
   const [authOpen, setAuthOpen] = useState(false);
-  const [username, setUsername] = useState(localStorage.getItem("physics-user") || "");
+  const [username, setUsername] = useState(() => {
+    try { return JSON.parse(localStorage.getItem("physics-user") || "null")?.name || ""; }
+    catch { return localStorage.getItem("physics-user") || ""; }
+  });
 
   useEffect(() => {
     const onHashChange = () => setPage(pageFromHash());
@@ -44,9 +45,9 @@ export default function App() {
     window.scrollTo({ top: 0, behavior: "smooth" });
   };
 
-  const login = (name) => {
-    localStorage.setItem("physics-user", name);
-    setUsername(name);
+  const login = (account) => {
+    localStorage.setItem("physics-user", JSON.stringify(account));
+    setUsername(account.name);
     setAuthOpen(false);
   };
 
@@ -68,7 +69,7 @@ export default function App() {
         onLogout={logout}
       />
       <main>
-        <Page navigate={navigate} username={username} />
+        <Page navigate={navigate} username={username} type={page} onRequireLogin={() => setAuthOpen(true)} />
       </main>
       <AuthModal open={authOpen} onClose={() => setAuthOpen(false)} onLogin={login} />
     </div>
