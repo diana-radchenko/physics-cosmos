@@ -18,11 +18,11 @@ import {
 const HEIGHT = 300;
 
 const opticalMedia = [
-  { value: "air", n: 1, name: "Воздух", label: "Воздух — n = 1,00" },
-  { value: "water", n: 1.333, name: "Вода", label: "Вода — n = 1,333" },
-  { value: "ice", n: 1.31, name: "Лёд", label: "Лёд — n = 1,31" },
-  { value: "glass", n: 1.57, name: "Стекло", label: "Стекло — n = 1,57" },
-  { value: "diamond", n: 2.417, name: "Алмаз", label: "Алмаз — n = 2,417" },
+  { value: "air", n: 1, name: "Воздух", label: "Воздух" },
+  { value: "water", n: 1.33, name: "Вода", label: "Вода" },
+  { value: "ice", n: 1.31, name: "Лёд", label: "Лёд" },
+  { value: "glass", n: 1.5, name: "Стекло", label: "Стекло" },
+  { value: "diamond", n: 2.42, name: "Алмаз", label: "Алмаз" },
 ];
 
 const simulationConfig = {
@@ -45,7 +45,7 @@ const simulationConfig = {
       { key: "medium2", label: "Вторая среда (в неё входит свет)", type: "select", options: opticalMedia },
       { key: "angle", label: "Угол падения θ₁", min: 0, max: 80, step: 1, unit: "°" },
     ],
-    initial: { medium1: "air", n1: 1, medium2: "water", n2: 1.333, angle: 35 },
+    initial: { medium1: "air", n1: 1, medium2: "water", n2: 1.33, angle: 35 },
   },
   gravity: {
     controls: [
@@ -217,7 +217,7 @@ function getResults(type, values) {
   }
   if (type === "gravity") {
     const force = gravityForce(values.m1 * 1e24, values.m2 * 1e24, values.distance * 1e7);
-    return [`F = ${formatNumber(force)} Н`, "G = 6,67430 × 10⁻¹¹ Н·м²/кг² (постоянная)"];
+    return [`F = ${formatNumber(force)} Н`, "G = 6,67 × 10⁻¹¹ Н·м²/кг² (постоянная)"];
   }
   if (type === "waves") {
     return [`v = λf = ${formatNumber(waveSpeed(values.wavelength, values.frequency))} м/с`, `T = ${formatNumber(1 / values.frequency)} с`];
