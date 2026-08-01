@@ -62,7 +62,7 @@ function getOpticsQuiz({ medium1, medium2, n1, n2, angle }) {
     };
   }
   return {
-    question: `Как изменится направление света, если для обеих сред n₁ = n₂ = ${n1.toFixed(2)}?`,
+    question: "Как изменится направление света, если у выбранных сред одинаковые показатели преломления?",
     answers,
     correct: 3,
   };

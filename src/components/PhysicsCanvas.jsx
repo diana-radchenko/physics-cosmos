@@ -18,11 +18,11 @@ import {
 const HEIGHT = 300;
 
 const opticalMedia = [
-  { value: "air", n: 1, name: "Воздух", label: "Воздух" },
-  { value: "water", n: 1.33, name: "Вода", label: "Вода" },
-  { value: "ice", n: 1.31, name: "Лёд", label: "Лёд" },
-  { value: "glass", n: 1.5, name: "Стекло", label: "Стекло" },
-  { value: "diamond", n: 2.42, name: "Алмаз", label: "Алмаз" },
+  { value: "air", n: 1, name: "Воздух", label: "Воздух — n = 1,00" },
+  { value: "water", n: 1.333, name: "Вода", label: "Вода — n = 1,333" },
+  { value: "ice", n: 1.31, name: "Лёд", label: "Лёд — n = 1,31" },
+  { value: "glass", n: 1.57, name: "Стекло", label: "Стекло — n = 1,57" },
+  { value: "diamond", n: 2.417, name: "Алмаз", label: "Алмаз — n = 2,417" },
 ];
 
 const simulationConfig = {
@@ -42,12 +42,10 @@ const simulationConfig = {
   optics: {
     controls: [
       { key: "medium1", label: "Первая среда (из неё выходит свет)", type: "select", options: opticalMedia },
-      { key: "n1", label: "Абсолютный показатель преломления n₁", min: 1, max: 10, step: 0.01 },
       { key: "medium2", label: "Вторая среда (в неё входит свет)", type: "select", options: opticalMedia },
-      { key: "n2", label: "Абсолютный показатель преломления n₂", min: 1, max: 10, step: 0.01 },
       { key: "angle", label: "Угол падения θ₁", min: 0, max: 80, step: 1, unit: "°" },
     ],
-    initial: { medium1: "air", n1: 1, medium2: "water", n2: 1.33, angle: 35 },
+    initial: { medium1: "air", n1: 1, medium2: "water", n2: 1.333, angle: 35 },
   },
   gravity: {
     controls: [
@@ -335,8 +333,8 @@ function drawSimulation(context, width, type, color, values, time, newtonMotion)
     context.fillStyle = "#fff";
     context.font = "14px sans-serif";
     context.textAlign = "left";
-    context.fillText(`${opticalMediumName(values.medium1, values.n1)} · n₁ = ${values.n1.toFixed(2)}`, 18, 32);
-    context.fillText(`${opticalMediumName(values.medium2, values.n2)} · n₂ = ${values.n2.toFixed(2)}`, 18, 185);
+    context.fillText(opticalMediumName(values.medium1, values.n1), 18, 32);
+    context.fillText(opticalMediumName(values.medium2, values.n2), 18, 185);
   } else if (type === "gravity") {
     const visualDistance = 90 + (values.distance - 2) * Math.min(13, (width - 250) / 18);
     const centerX = width / 2;
