@@ -31,8 +31,8 @@ export default function App() {
   const [authOpen, setAuthOpen] = useState(false);
   const [locale, setLocale] = useState(() => localStorage.getItem("physics-locale") || "ru");
   const [username, setUsername] = useState(() => {
-    try { return JSON.parse(localStorage.getItem("physics-user") || "null")?.name || ""; }
-    catch { return localStorage.getItem("physics-user") || ""; }
+    try { return JSON.parse(sessionStorage.getItem("physics-user-session") || "null")?.name || ""; }
+    catch { return ""; }
   });
 
   useEffect(() => {
@@ -53,12 +53,14 @@ export default function App() {
   };
 
   const login = (account) => {
-    localStorage.setItem("physics-user", JSON.stringify(account));
+    sessionStorage.setItem("physics-user-session", JSON.stringify(account));
+    localStorage.removeItem("physics-user");
     setUsername(account.name);
     setAuthOpen(false);
   };
 
   const logout = () => {
+    sessionStorage.removeItem("physics-user-session");
     localStorage.removeItem("physics-user");
     setUsername("");
   };
