@@ -3,8 +3,8 @@ import { text } from "../i18n.js";
 const features = [
   ["⚛", "Интерактивные симуляции", "Interactive simulations", "Наблюдай физические процессы в реальном времени", "Watch physical processes in real time", "physics"],
   ["✦", "AI-помощник", "AI tutor", "Получай понятные ответы на вопросы по физике", "Get clear answers to physics questions", "ai"],
-  ["📚", "Структурированная теория", "Structured theory", "Изучай материал от простого к сложному", "Learn step by step, from simple to advanced", "physics"],
-  ["👥", "Сообщество учеников", "Student community", "Общайся и обменивайся знаниями", "Connect and share knowledge", "chat"],
+  ["🎓", "Сообщество учеников", "Student community", "Находи друзей и учись вместе", "Find friends and learn together", "friends"],
+  ["👩‍🏫", "Сообщество учителей", "Teacher community", "Общайся с учителями и задавай вопросы", "Connect with teachers and ask questions", "teachers"],
 ];
 
 export default function HomePage({ navigate, locale }) {
