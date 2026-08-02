@@ -82,11 +82,13 @@ export default function HomePage({ navigate, locale }) {
           <p className="showcase-label pink-label">{l("Сообщество", "Community")}</p>
           <h2>{l("Учись вместе с другими", "Learn together")}</h2>
           <p className="lead small">
-            {l("Присоединяйся к активному сообществу учеников со всего мира. Обменивайся знаниями, задавай вопросы и помогай другим в их обучении через наш интерактивный чат.", "Join an active community of students from around the world. Share knowledge, ask questions, and help others learn in our interactive chat.")}
+            {l("Присоединяйся к активному сообществу учеников и учителей со всего мира. Делись знаниями, задавай вопросы и помогай другим учиться.", "Join an active community of students and teachers from around the world. Share knowledge, ask questions, and help others learn in our interactive chat.")}
           </p>
-          <button className="primary-button large" onClick={() => navigate("chat")}>
-            👥 {l("Присоединиться к чату", "Join the chat")}
-          </button>
+          <div className="button-row compact">
+            <button className="primary-button" onClick={() => navigate("friends")}>👥 {l("Друзья", "Friends")}</button>
+            <button className="ghost-button" onClick={() => navigate("teachers")}>👩‍🏫 {l("Учителя", "Teachers")}</button>
+            <button className="ghost-button" onClick={() => navigate("chat")}>📰 {l("Статьи", "Articles")}</button>
+          </div>
         </div>
       </section>
 
