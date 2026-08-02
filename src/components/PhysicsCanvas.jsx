@@ -44,6 +44,8 @@ const physicsTranslations = [
   ["Суммарный импульс сохраняется", "Total momentum is conserved"], ["Ошибка: суммарный импульс не сохраняется", "Error: total momentum is not conserved"],
   ["Тела движутся вместе", "Objects move together"], ["После удара", "After impact"], ["При U = 0 ток отсутствует", "At U = 0 there is no current"],
   ["Полярность и направление тока обращены", "Polarity and current direction are reversed"], ["Ток направлен по принятому направлению", "Current follows the conventional direction"],
+  ["Условный ток направлен от «+» к «−»", "Conventional current flows from + to −"], ["Полярность и направление тока обратные", "Polarity and current direction are reversed"],
+  ["Тепло", "Heat"], ["тело", "body"], ["Тело", "Body"], ["Tравн", "T_eq"], ["До:", "Before:"], ["После:", "After:"],
   ["мкКл", "μC"], ["кг", "kg"], ["м/с²", "m/s²"], ["м/с", "m/s"], ["Гц", "Hz"], ["Дж", "J"], ["Вт", "W"], ["Тл", "T"], ["Ом", "Ω"], [" Н", " N"], [" А", " A"], [" В", " V"], [" с", " s"], [" м", " m"],
 ];
 
@@ -1385,6 +1387,4 @@ export default function PhysicsCanvas({ type, color, onNewtonSolveForChange, onO
       </div>
     </div>
   );
-}
-}
 }
