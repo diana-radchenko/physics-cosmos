@@ -47,12 +47,12 @@ const englishSymbols = {
   gravity: [["gravitational force between the objects", "N"], ["gravitational constant, about 6.67 × 10⁻¹¹", "N·m²/kg²"], ["masses of the interacting objects", "kg"], ["distance between their centers of mass", "m"]],
   waves: [["wave speed", "m/s"], ["wavelength", "m"], ["oscillation frequency", "Hz"]],
   electric: [["magnitude of electrostatic force", "N"], ["Coulomb constant, about 9 × 10⁹", "N·m²/C²"], ["electric charges", "C"], ["distance between charges", "m"]],
-  pendulum: [["period of one complete oscillation", "s"], ["pi, approximately 3.14", ""], ["pendulum length", "m"], ["gravitational acceleration", "m/s²"], ["square root", ""]],
+  pendulum: [["period of one complete oscillation", "s"], ["pi, approximately 3.14", ""], ["pendulum length", "m"], ["gravitational acceleration", "m/s²"]],
   heat: [["heat gained or released", "J"], ["specific heat capacity", "J/(kg·°C)"], ["object mass", "kg"], ["temperature change", "°C or K"]],
   magnetism: [["magnetic component of the Lorentz force", "N"], ["particle charge", "C"], ["charged-particle speed", "m/s"], ["magnetic flux density", "T"], ["angle between velocity and the magnetic field", "degrees (°)"], ["sine of angle θ", ""]],
-  projectile: [["horizontal coordinate", "m"], ["initial speed", "m/s"], ["launch angle", "degrees (°)"], ["time after launch", "s"], ["cosine of the launch angle", ""]],
+  projectile: [["horizontal coordinate", "m"], ["vertical coordinate", "m"], ["initial speed", "m/s"], ["launch angle", "degrees (°)"], ["time after launch", "s"], ["gravitational acceleration", "m/s²"], ["cosine of the launch angle", ""], ["sine of the launch angle", ""]],
   hooke: [["spring force", "N"], ["spring constant", "N/m"], ["extension or compression from equilibrium", "m"], ["force points opposite to deformation", ""]],
-  momentum: [["masses of the two objects", "kg"], ["velocities including direction", "m/s"], ["object momentum", "kg·m/s"], ["constant total momentum of a closed system", ""]],
+  momentum: [["masses of the two objects", "kg"], ["velocities before collision, including direction", "m/s"], ["object momentum", "kg·m/s"], ["velocities after collision, including direction", "m/s"]],
   ohm: [["electric current", "A"], ["voltage", "V"], ["electrical resistance", "Ω"]],
 };
 
@@ -67,7 +67,7 @@ const opticalMediaNames = {
 function getOpticsQuiz({ medium1, medium2, n1, n2, angle }, locale) {
   if (locale === "en") {
     const theta2 = refractedAngle(n1, n2, angle);
-    const answers = ["Total internal reflection occurs", "The ray bends toward the normal", "The ray bends away from the normal", "The ray does not change direction"];
+    const answers = ["Total internal reflection occurs", "The ray bends closer to the normal to the boundary between the two media", "The ray bends farther away from the normal to the boundary between the two media", "The ray does not change direction"];
     const correct = theta2 === null ? 0 : n2 > n1 ? 1 : n2 < n1 ? 2 : 3;
     return { question: `How does light change direction when it crosses the selected boundary at an incidence angle of ${angle}°?`, answers, correct };
   }
@@ -76,8 +76,8 @@ function getOpticsQuiz({ medium1, medium2, n1, n2, angle }, locale) {
   const theta2 = refractedAngle(n1, n2, angle);
   const answers = [
     "Возникает полное внутреннее отражение",
-    "Луч поворачивает ближе к перпендикуляру",
-    "Луч отклоняется дальше от перпендикуляра",
+    "Луч поворачивается ближе к перпендикуляру к границе раздела двух сред",
+    "Луч отклоняется дальше от перпендикуляра к границе раздела двух сред",
     "Направление луча не изменяется",
   ];
 
@@ -161,7 +161,11 @@ function TopicCard({ topic, open, onToggle, locale }) {
             </section>
             <section className="formula-panel">
               <span>{l("Формула", "Formula")}</span>
-              <strong>{topic.formula}</strong>
+              {topic.id === "pendulum" ? (
+                <strong className="math-formula">T = 2π × <span className="square-root"><span>L / g</span></span></strong>
+              ) : (
+                <strong className={topic.id === "projectile" ? "multiline-formula" : ""}>{topic.formula}</strong>
+              )}
               <div className="formula-symbols">
                 <h4>{l("Обозначения", "Symbols")}</h4>
                 <dl>
@@ -240,3 +244,4 @@ export default function PhysicsPage({ locale }) {
     </section>
   );
 }
+

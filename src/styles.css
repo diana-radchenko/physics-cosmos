@@ -209,6 +209,10 @@ p { line-height: 1.75; }
 .formula-panel { display: grid; place-items: center; align-content: center; background: linear-gradient(145deg, rgba(34,211,238,.1), rgba(139,92,246,.14)); }
 .formula-panel span { color: var(--muted); text-transform: uppercase; font-size: .7rem; letter-spacing: .16em; }
 .formula-panel strong { margin-top: 15px; font-size: clamp(1.7rem, 4vw, 2.7rem); color: #a5f3fc; white-space: nowrap; }
+.formula-panel strong.multiline-formula { white-space: pre-line; text-align: center; line-height: 1.45; }
+.square-root { display: inline-flex; align-items: flex-start; color: inherit !important; font-size: inherit !important; letter-spacing: 0 !important; text-transform: none !important; }
+.square-root::before { content: "√"; color: inherit; font-size: 1.18em; line-height: .95; }
+.square-root > span { margin-left: -0.08em; padding: .08em .14em 0; border-top: .075em solid currentColor; color: inherit; font-size: inherit; letter-spacing: 0; text-transform: none; }
 .formula-symbols { width: 100%; margin-top: 22px; padding-top: 18px; border-top: 1px solid rgba(255,255,255,.12); }
 .formula-symbols h4 { margin: 0 0 10px; color: #e5e7eb; font-size: .95rem; }
 .formula-symbols dl { display: grid; gap: 9px; margin: 0; }
@@ -312,8 +316,8 @@ input[type="range"] { display: block; width: 100%; margin-top: 8px; accent-color
 .suggestion-row { display: flex; gap: 8px; flex-wrap: wrap; padding: 0 20px 18px; }
 .suggestion-row button { border: 1px solid rgba(103,232,249,.24); border-radius: 999px; padding: 8px 12px; color: #a5f3fc; background: rgba(34,211,238,.07); cursor: pointer; font-size: .75rem; }
 .chat-input { display: flex; gap: 10px; padding: 16px; border-top: 1px solid var(--border); }
-.chat-input input, .modal-card input, .search-input { width: 100%; border: 1px solid var(--border); border-radius: 13px; outline: none; padding: 13px 15px; color: #fff; background: rgba(255,255,255,.055); }
-.chat-input input:focus, .modal-card input:focus, .search-input:focus { border-color: var(--cyan); box-shadow: 0 0 0 3px rgba(34,211,238,.1); }
+.chat-input input, .modal-card input, .search-input, .contact-search-fields input, .contact-search-fields select { width: 100%; border: 1px solid var(--border); border-radius: 13px; outline: none; padding: 13px 15px; color: #fff; background: rgba(255,255,255,.055); color-scheme: dark; }
+.chat-input input:focus, .modal-card input:focus, .search-input:focus, .contact-search-fields input:focus, .contact-search-fields select:focus { border-color: var(--cyan); box-shadow: 0 0 0 3px rgba(34,211,238,.1); }
 .online-strip { padding: 13px 20px; color: #86efac; border-bottom: 1px solid var(--border); font-size: .76rem; }
 .online-dot { display: inline-block; width: 8px; height: 8px; margin-right: 7px; border-radius: 50%; background: #22c55e; box-shadow: 0 0 12px #22c55e; }
 .community-messages { min-height: 410px; padding: 22px; display: grid; align-content: start; gap: 20px; }
@@ -644,3 +648,4 @@ input[type="range"] { display: block; width: 100%; margin-top: 8px; accent-color
     min-width: 360px;
   }
 }
+

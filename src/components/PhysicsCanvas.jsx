@@ -19,7 +19,7 @@ import {
 
 const physicsTranslations = [
   ["Первая среда (из неё выходит свет)", "First medium (light exits it)"], ["Вторая среда (в неё входит свет)", "Second medium (light enters it)"],
-  ["Начальная температура", "Initial temperature"], ["Коэффициент теплопередачи", "Heat-transfer coefficient"], ["Постоянное ускорение", "Gravitational acceleration"],
+  ["Начальная температура", "Initial temperature"], ["Коэффициент теплопередачи", "Heat-transfer coefficient"], ["Ускорение свободного падения", "Gravitational acceleration"],
   ["Начальная скорость", "Initial speed"], ["Начальный угол", "Initial angle"], ["Магнитная индукция", "Magnetic flux density"],
   ["Ориентация магнита", "Magnet orientation"], ["Проводник с током", "Current-carrying wire"], ["Тип столкновения", "Collision type"],
   ["Пользовательская среда", "Custom medium"], ["Тепловое равновесие", "Thermal equilibrium"], ["Мощность теплопередачи", "Heat-transfer power"],
@@ -31,7 +31,7 @@ const physicsTranslations = [
   ["Угол падения", "Incidence angle"], ["Расстояние", "Distance"], ["Частота", "Frequency"], ["Длина волны", "Wavelength"], ["Амплитуда", "Amplitude"],
   ["Заряд", "Charge"], ["Длина", "Length"], ["Материал тела", "Object material"], ["Сила тока", "Current"], ["Угол", "Angle"],
   ["Жёсткость", "Spring constant"], ["Деформация", "Deformation"], ["Скорость", "Velocity"], ["Напряжение", "Voltage"], ["Сопротивление", "Resistance"],
-  ["Силу", "Force"], ["Массу", "Mass"], ["Упругое", "Elastic"], ["Неупругое", "Inelastic"], ["Отключён", "Off"],
+  ["Силу", "Force"], ["Массу", "Mass"], ["Упругое", "Elastic"], ["Абсолютно неупругое", "Perfectly inelastic"], ["Отключён", "Off"],
   ["Ток к наблюдателю", "Current toward viewer"], ["Ток от наблюдателя", "Current away from viewer"], ["N слева, S справа", "N left, S right"], ["S слева, N справа", "S left, N right"],
   ["Воздух", "Air"], ["Вода", "Water"], ["Лёд", "Ice"], ["Стекло", "Glass"], ["Алмаз", "Diamond"], ["Медь", "Copper"], ["Сталь", "Steel"], ["Алюминий", "Aluminium"],
   ["массы Земли", "Earth masses"], ["градусы", "degrees"], ["Мощность", "Power"],
@@ -45,7 +45,10 @@ const physicsTranslations = [
   ["Тела движутся вместе", "Objects move together"], ["После удара", "After impact"], ["При U = 0 ток отсутствует", "At U = 0 there is no current"],
   ["Полярность и направление тока обращены", "Polarity and current direction are reversed"], ["Ток направлен по принятому направлению", "Current follows the conventional direction"],
   ["Условный ток направлен от «+» к «−»", "Conventional current flows from + to −"], ["Полярность и направление тока обратные", "Polarity and current direction are reversed"],
-  ["Тепло", "Heat"], ["тело", "body"], ["Тело", "Body"], ["Tравн", "T_eq"], ["До:", "Before:"], ["После:", "After:"],
+  ["Электрическое поле направлено от «+» к «−».", "The electric field points from + to −."], ["Положительный заряд движется по направлению поля,", "A positive charge moves along the field;"], ["отрицательный — в противоположную сторону.", "a negative charge moves in the opposite direction."],
+  ["Постоянное ускорение Земли", "Constant Earth acceleration"], ["Кинетическая энергия", "Kinetic energy"], ["Правило знаков", "Sign convention"], ["положительная скорость — вправо, отрицательная — влево", "positive velocity is to the right; negative velocity is to the left"],
+  ["после теплообмена", "after heat exchange"], ["сохраняется", "is conserved"], ["уменьшается", "decreases"],
+  ["Тепло", "Heat"], ["тело", "body"], ["Тело", "Body"], ["До:", "Before:"], ["После:", "After:"],
   ["мкКл", "μC"], ["кг", "kg"], ["м/с²", "m/s²"], ["м/с", "m/s"], ["Гц", "Hz"], ["Дж", "J"], ["Вт", "W"], ["Тл", "T"], ["Ом", "Ω"], [" Н", " N"], [" А", " A"], [" В", " V"], [" с", " s"], [" м", " m"],
 ];
 
@@ -124,7 +127,7 @@ const simulationConfig = {
   pendulum: {
     controls: [
       { key: "length", label: "Длина L", min: 0.4, max: 3, step: 0.1, unit: "м" },
-      { key: "gravity", label: "Постоянное ускорение g", min: 1.62, max: 15, step: 0.01, unit: "м/с²" },
+      { key: "gravity", label: "Ускорение свободного падения g", min: 1.62, max: 15, step: 0.01, unit: "м/с²" },
       { key: "initialAngle", label: "Начальный угол θ₀", min: 1, max: 15, step: 1, unit: "°" },
     ],
     initial: { length: 1.5, gravity: 9.81, initialAngle: 10 },
@@ -158,20 +161,13 @@ const simulationConfig = {
         { value: 1, label: "N слева, S справа" },
         { value: -1, label: "S слева, N справа" },
       ] },
-      { key: "conductor", label: "Проводник с током", type: "select", options: [
-        { value: "none", label: "Отключён" },
-        { value: "out", label: "Ток к наблюдателю (•)" },
-        { value: "in", label: "Ток от наблюдателя (×)" },
-      ] },
-      { key: "current", label: "Сила тока I", min: 1, max: 10, step: 1, unit: "А" },
     ],
-    initial: { strength: 1, direction: 1, conductor: "out", current: 5 },
+    initial: { strength: 1, direction: 1 },
   },
   projectile: {
     controls: [
       { key: "velocity", label: "Начальная скорость v₀", min: 8, max: 40, step: 1, unit: "м/с" },
       { key: "angle", label: "Угол α", min: 5, max: 85, step: 1, unit: "°" },
-      { key: "gravity", label: "Постоянное ускорение g", min: 1.62, max: 15, step: 0.01, unit: "м/с²" },
     ],
     initial: { velocity: 20, angle: 45, gravity: 9.81 },
   },
@@ -191,7 +187,7 @@ const simulationConfig = {
       { key: "v2", label: "Скорость v₂", min: -8, max: 8, step: 0.5, unit: "м/с" },
       { key: "collision", label: "Тип столкновения", type: "select", options: [
         { value: "elastic", label: "Упругое" },
-        { value: "inelastic", label: "Неупругое" },
+        { value: "inelastic", label: "Абсолютно неупругое" },
       ] },
     ],
     initial: { m1: 2, v1: 5, m2: 3, v2: -2, collision: "elastic" },
@@ -205,13 +201,13 @@ const simulationConfig = {
   },
 };
 
-function formatNumber(value, digits = 2) {
+function formatNumber(value) {
   if (!Number.isFinite(value)) return "—";
   if (Math.abs(value) >= 1e5 || (Math.abs(value) > 0 && Math.abs(value) < 0.01)) {
-    const [mantissa, exponent] = value.toExponential(2).split("e");
+    const [mantissa, exponent] = value.toExponential(3).split("e");
     return `${mantissa} × 10^${Number(exponent)}`;
   }
-  return Number(value.toFixed(digits)).toString();
+  return value.toFixed(3);
 }
 
 function chargeSign(value) {
@@ -344,7 +340,7 @@ function getResults(type, values, time = 0) {
     const force = gravityForce(values.m1 * EARTH_MASS_KG, values.m2 * EARTH_MASS_KG, values.distance * 1e7);
     return [
       `F = ${formatNumber(force)} Н`,
-      "2r → F/4 · r/2 → 4F · G — постоянная",
+      "G — постоянная",
     ];
   }
   if (type === "waves") {
@@ -355,474 +351,7 @@ function getResults(type, values, time = 0) {
   }
   if (type === "electric") {
     const force = coulombForce(values.q1 * 1e-6, values.q2 * 1e-6, values.distance);
-    const interaction = values.q1 === 0 || values.q2 === 0
-      ? "Сила взаимодействия равна нулю"
-      : values.q1 * values.q2 < 0
-        ? "Разноимённые заряды притягиваются"
-        : "Одноимённые заряды отталкиваются";
-    return [
-      `F = k × (q₁ × q₂) / r²; |F| = ${formatNumber(force, 3)} Н`,
-      interaction,
-    ];
-  }
-  if (type === "pendulum") {
-    const period = pendulumPeriod(values.length, values.gravity);
-    return [
-      `T ≈ 2π × √(L / g) = ${formatNumber(period, 2)} с`,
-      `L = ${formatNumber(values.length, 1)} м · g = ${formatNumber(values.gravity, 2)} м/с² · θ₀ = ${values.initialAngle}°`,
-    ];
-  }
-  if (type === "heat") {
-    const state = heatTransferState({ ...values, time: 0 });
-    return [
-      `Tравн = (m₁c₁T₁ + m₂c₂T₂) / (m₁c₁ + m₂c₂) = ${formatNumber(state.equilibrium, 1)} °C`,
-      "Tравн — общая температура после теплообмена",
-      "m₁, m₂ — массы тел",
-      "c₁, c₂ — их удельные теплоёмкости",
-      "T₁, T₂ — начальные температуры",
-    ];
-  }
-  if (type === "magnetism") {
-    const conductorResult = values.conductor === "out"
-      ? "Ток к наблюдателю (•): поле против часовой стрелки"
-      : values.conductor === "in"
-        ? "Ток от наблюдателя (×): поле по часовой стрелке"
-        : "Проводник с током отключён";
-    return [
-      `Поле магнита: N → S · B = ${formatNumber(values.strength, 1)} Тл`,
-      conductorResult,
-    ];
-  }
-  if (type === "projectile") {
-    const metrics = projectileMetrics(values.velocity, values.angle, values.gravity);
-    return [
-      `Время полёта: ${formatNumber(metrics.flightTime)} с`,
-      `Максимальная высота: ${formatNumber(metrics.maxHeight)} м`,
-      `Дальность: ${formatNumber(metrics.range)} м`,
-      `Ускорение постоянно: aₓ = 0; aᵧ = −g = −${formatNumber(values.gravity, 2)} м/с²`,
-      "Формулы: x = v₀ cos(α) · t; y = v₀ sin(α) · t − gt² / 2",
-    ];
-  }
-  if (type === "hooke") {
-    const metrics = hookeMetrics(values.stiffness, values.mass, values.extension);
-    const displacement = values.extension * Math.cos(metrics.angularFrequency * time);
-    const force = -values.stiffness * displacement;
-    return [
-      `Текущая деформация: x(t) = ${formatNumber(displacement, 3)} м`,
-      `Текущая сила: F(t) = −kx(t) = ${formatNumber(force, 2)} Н`,
-      `Период: T = ${formatNumber(metrics.period)} с`,
-    ];
-  }
-  if (type === "momentum") {
-    const result = collisionResult(values.m1, values.v1, values.m2, values.v2, values.collision);
-    const beforeP1 = values.m1 * values.v1;
-    const beforeP2 = values.m2 * values.v2;
-    const afterP1 = values.m1 * result.v1;
-    const afterP2 = values.m2 * result.v2;
-    const beforeTotal = beforeP1 + beforeP2;
-    const afterTotal = afterP1 + afterP2;
-    const conserved = Math.abs(beforeTotal - afterTotal) < 1e-9;
-    const typeLabel = values.collision === "inelastic" ? "Неупругое" : "Упругое";
-
-    return [
-      `${typeLabel} столкновение`,
-      `До: p₁ + p₂ = ${formatNumber(beforeP1)} + ${formatNumber(beforeP2)} = ${formatNumber(beforeTotal)} кг·м/с`,
-      `После: p₁′ + p₂′ = ${formatNumber(afterP1)} + ${formatNumber(afterP2)} = ${formatNumber(afterTotal)} кг·м/с`,
-      conserved ? "Суммарный импульс сохраняется" : "Ошибка: суммарный импульс не сохраняется",
-      values.collision === "inelastic"
-        ? `Тела движутся вместе: v = ${formatNumber(result.v1)} м/с`
-        : `После удара: v₁′ = ${formatNumber(result.v1)} м/с, v₂′ = ${formatNumber(result.v2)} м/с`,
-    ];
-  }
-  if (type === "ohm") {
-    const current = ohmCurrent(values.voltage, values.resistance);
-    const direction = values.voltage === 0
-      ? "При U = 0 ток отсутствует"
-      : values.voltage < 0
-        ? "Полярность и направление тока обратные"
-        : "Условный ток направлен от «+» к «−»";
-    return [`I = U / R = ${formatNumber(current)} А`, direction];
-  }
-  return [];
-}
-
-function drawSimulation(context, width, type, color, values, time, newtonMotion) {
-  context.clearRect(0, 0, width, HEIGHT);
-  context.fillStyle = "#080d24";
-  context.fillRect(0, 0, width, HEIGHT);
-  drawGrid(context, width);
-  context.shadowBlur = 18;
-  context.shadowColor = color;
-  context.lineWidth = 3;
-  context.strokeStyle = color;
-  context.fillStyle = color;
-
-  if (type === "newton") {
-    const displayMass = values.mass ?? 1;
-    const massWidth = 48 + displayMass * 2.4;
-    const x = newtonMotion?.position ?? 50;
-    context.fillRect(x, 175, massWidth, 55);
-    context.fillStyle = "#fff";
-    context.font = "14px sans-serif";
-    context.textAlign = "center";
-    context.fillText(`${formatNumber(values.mass)} кг`, x + massWidth / 2, 208);
-    const arrowLength = Math.min(120, Math.abs(values.force) * 4);
-    if (values.force !== 0) {
-      const start = values.force > 0 ? x + massWidth : x;
-      drawArrow(context, start, 160, start + Math.sign(values.force) * arrowLength, 160, "#f8fafc", 3);
-      context.fillText(`F = ${values.force} Н`, start + Math.sign(values.force) * arrowLength / 2, 143);
-    }
-    context.strokeStyle = "rgba(255,255,255,.45)";
-    context.beginPath();
-    context.moveTo(25, 232);
-    context.lineTo(width - 25, 232);
-    context.stroke();
-    context.fillStyle = "#fff";
-    context.textAlign = "left";
-    context.fillText(`a = ${formatNumber(values.acceleration)} м/с²`, 25, 265);
-    context.textAlign = "right";
-    context.fillText(`v = ${formatNumber(newtonMotion?.velocity ?? 0)} м/с`, width - 25, 265);
-  } else if (type === "optics") {
-    const boundaryY = 155;
-    const centerX = width / 2;
-    const theta1 = values.angle * Math.PI / 180;
-    const sinTheta2 = values.n1 * Math.sin(theta1) / values.n2;
-    context.fillStyle = "rgba(59,130,246,.12)";
-    context.fillRect(0, boundaryY, width, HEIGHT - boundaryY);
-    context.strokeStyle = "rgba(255,255,255,.45)";
-    context.lineWidth = 2;
-    context.beginPath();
-    context.moveTo(0, boundaryY);
-    context.lineTo(width, boundaryY);
-    context.stroke();
-    context.setLineDash([6, 6]);
-    context.beginPath();
-    context.moveTo(centerX, 30);
-    context.lineTo(centerX, 275);
-    context.stroke();
-    context.setLineDash([]);
-    const rayLength = 125;
-    const startX = centerX - Math.sin(theta1) * rayLength;
-    const startY = boundaryY - Math.cos(theta1) * rayLength;
-    drawArrow(context, startX, startY, centerX, boundaryY, "#ffffff", 3);
-    const reflectX = centerX + Math.sin(theta1) * rayLength;
-    const reflectY = boundaryY - Math.cos(theta1) * rayLength;
-    drawArrow(context, centerX, boundaryY, reflectX, reflectY, "rgba(255,255,255,.5)", 2);
-    if (Math.abs(sinTheta2) <= 1) {
-      const theta2 = Math.asin(sinTheta2);
-      drawArrow(context, centerX, boundaryY, centerX + Math.sin(theta2) * rayLength, boundaryY + Math.cos(theta2) * rayLength, color, 3);
-    }
-    context.fillStyle = "#fff";
-    context.font = "14px sans-serif";
-    context.textAlign = "left";
-    context.fillText(opticalMediumName(values.medium1, values.n1), 18, 32);
-    context.fillText(opticalMediumName(values.medium2, values.n2), 18, 185);
-  } else if (type === "gravity") {
-    const centerX = width / 2;
-    const centerY = 145;
-    const orbitRadius = 62 + (values.distance - 2) / 18 * Math.min(115, width / 4);
-    const relativeSpeed = Math.sqrt(values.m1) / Math.pow(values.distance / 8, 1.5);
-    const orbitAngle = time * 0.55 * relativeSpeed;
-    const satelliteX = centerX + Math.cos(orbitAngle) * orbitRadius;
-    const satelliteY = centerY + Math.sin(orbitAngle) * orbitRadius * 0.38;
-    const planetRadius = 34;
-    const satelliteRadius = 13;
-    const force = gravityForce(
-      values.m1 * EARTH_MASS_KG,
-      values.m2 * EARTH_MASS_KG,
-      values.distance * 1e7,
-    );
-    const referenceForce = gravityForce(EARTH_MASS_KG, EARTH_MASS_KG, 8e7);
-    const forceArrowLength = 24 + 82 * Math.min(1, Math.sqrt(force / referenceForce) / 2);
-    const directionX = centerX - satelliteX;
-    const directionY = centerY - satelliteY;
-    const directionLength = Math.hypot(directionX, directionY) || 1;
-    const arrowStartX = satelliteX + directionX / directionLength * (satelliteRadius + 4);
-    const arrowStartY = satelliteY + directionY / directionLength * (satelliteRadius + 4);
-    const arrowEndX = arrowStartX + directionX / directionLength * forceArrowLength;
-    const arrowEndY = arrowStartY + directionY / directionLength * forceArrowLength;
-
-    context.strokeStyle = "rgba(255,255,255,.25)";
-    context.lineWidth = 1.5;
-    context.setLineDash([6, 6]);
-    context.beginPath();
-    context.ellipse(centerX, centerY, orbitRadius, orbitRadius * 0.38, 0, 0, Math.PI * 2);
-    context.stroke();
-    context.setLineDash([]);
-
-    const glow = context.createRadialGradient(centerX - 10, centerY - 12, 2, centerX, centerY, planetRadius);
-    glow.addColorStop(0, "#67e8f9");
-    glow.addColorStop(1, "#0891b2");
-    context.fillStyle = glow;
-    context.beginPath();
-    context.arc(centerX, centerY, planetRadius, 0, Math.PI * 2);
-    context.fill();
-
-    context.fillStyle = "#06b6d4";
-    context.beginPath();
-    context.arc(satelliteX, satelliteY, satelliteRadius, 0, Math.PI * 2);
-    context.fill();
-
-    drawArrow(context, arrowStartX, arrowStartY, arrowEndX, arrowEndY, "#f8fafc", 3);
-    context.fillStyle = "#fff";
-    context.font = "14px sans-serif";
-    context.textAlign = "center";
-    context.fillText("Планета m₁", centerX, centerY + 5);
-    context.fillText("Спутник m₂", satelliteX, satelliteY - 21);
-    context.fillText("F", (arrowStartX + arrowEndX) / 2, (arrowStartY + arrowEndY) / 2 - 8);
-    context.fillText(`r = ${values.distance} × 10⁷ м`, centerX, 267);
-  } else if (type === "waves") {
-    const centerY = 150;
-    const pixelsPerWave = 35 + values.wavelength * 45;
-    const amplitudePixels = values.amplitude * 50;
-
-    context.shadowBlur = 0;
-    context.strokeStyle = "rgba(255,255,255,.25)";
-    context.lineWidth = 1;
-    context.beginPath();
-    context.moveTo(0, centerY);
-    context.lineTo(width, centerY);
-    context.stroke();
-
-    context.shadowBlur = 18;
-    context.shadowColor = color;
-    context.strokeStyle = color;
-    context.lineWidth = 3;
-    context.beginPath();
-    for (let x = 0; x <= width; x += 3) {
-      const y = centerY + Math.sin((x / pixelsPerWave) * Math.PI * 2 - time * values.frequency * Math.PI * 2) * amplitudePixels;
-      x === 0 ? context.moveTo(x, y) : context.lineTo(x, y);
-    }
-    context.stroke();
-
-    context.shadowBlur = 0;
-    context.fillStyle = "#fff";
-    context.font = "14px sans-serif";
-    context.textAlign = "left";
-    context.fillText(
-      `f = ${formatNumber(values.frequency, 1)} Гц · λ = ${formatNumber(values.wavelength, 1)} м · A = ${formatNumber(values.amplitude, 1)} м`,
-      18,
-      28,
-    );
-  } else if (type === "electric") {
-    const maximumSpread = Math.max(100, Math.min(320, width - 150));
-    const spread = 100 + (values.distance - 1) / 7 * (maximumSpread - 100);
-    const left = width / 2 - spread / 2;
-    const right = width / 2 + spread / 2;
-    const centerY = 142;
-    const force = coulombForce(values.q1 * 1e-6, values.q2 * 1e-6, values.distance);
-    const maximumForce = coulombForce(5e-6, 5e-6, 1);
-    const forceArrowLength = force === 0
-      ? 0
-      : 26 + 62 * Math.min(1, Math.sqrt(force / maximumForce));
-
-    const drawFieldAroundCharge = (x, value, radius) => {
-      if (value === 0) return;
-      const lineCount = 4 + Math.abs(value);
-      const fieldLength = 25 + Math.abs(value) * 2;
-      for (let index = 0; index < lineCount; index += 1) {
-        const angle = index / lineCount * Math.PI * 2;
-        const innerX = x + Math.cos(angle) * (radius + 5);
-        const innerY = centerY + Math.sin(angle) * (radius + 5);
-        const outerX = x + Math.cos(angle) * (radius + fieldLength);
-        const outerY = centerY + Math.sin(angle) * (radius + fieldLength);
-        if (value > 0) {
-          drawArrow(context, innerX, innerY, outerX, outerY, "rgba(244,114,182,.72)", 1.5);
-        } else {
-          drawArrow(context, outerX, outerY, innerX, innerY, "rgba(56,189,248,.72)", 1.5);
-        }
-      }
-    };
-
-    const radius1 = 23 + Math.abs(values.q1) * 1.8;
-    const radius2 = 23 + Math.abs(values.q2) * 1.8;
-    drawFieldAroundCharge(left, values.q1, radius1);
-    drawFieldAroundCharge(right, values.q2, radius2);
-
-    if (forceArrowLength > 0) {
-      const attract = values.q1 * values.q2 < 0;
-      const leftDirection = attract ? 1 : -1;
-      const rightDirection = -leftDirection;
-      const leftForceEnd = Math.max(15, Math.min(width - 15, left + leftDirection * forceArrowLength));
-      const rightForceEnd = Math.max(15, Math.min(width - 15, right + rightDirection * forceArrowLength));
-      drawArrow(context, left, 67, leftForceEnd, 67, "#fff", 3);
-      drawArrow(context, right, 67, rightForceEnd, 67, "#fff", 3);
-      context.fillStyle = "#fff";
-      context.font = "bold 13px sans-serif";
-      context.textAlign = "center";
-      context.fillText("F", (left + leftForceEnd) / 2, 55);
-      context.fillText("F", (right + rightForceEnd) / 2, 55);
-    }
-
-    [[left, values.q1, radius1], [right, values.q2, radius2]].forEach(([x, value, radius]) => {
-      context.fillStyle = value > 0 ? "#ec4899" : value < 0 ? "#0284c7" : "#64748b";
-      context.beginPath();
-      context.arc(x, centerY, radius, 0, Math.PI * 2);
-      context.fill();
-      context.fillStyle = "#fff";
-      context.font = "bold 24px sans-serif";
-      context.textAlign = "center";
-      context.fillText(chargeSign(value), x, centerY + 8);
-    });
-
-    context.fillStyle = "#fff";
-    context.font = "13px sans-serif";
-    context.textAlign = "center";
-    context.fillText(`q₁ = ${values.q1} мкКл`, left, 196);
-    context.fillText(`q₂ = ${values.q2} мкКл`, right, 196);
-
-    context.strokeStyle = "rgba(255,255,255,.4)";
-    context.lineWidth = 1.5;
-    context.setLineDash([5, 5]);
-    context.beginPath();
-    context.moveTo(left, 216);
-    context.lineTo(right, 216);
-    context.stroke();
-    context.setLineDash([]);
-    context.fillStyle = "#fff";
-    context.fillText(`r = ${formatNumber(values.distance, 1)} м`, width / 2, 238);
-    context.font = "12px sans-serif";
-    context.fillStyle = "rgba(255,255,255,.78)";
-    context.fillText("Направление поля E: от «+» к «−»", width / 2, 262);
-    context.fillText("Сила на «+» заряд — по E", width / 2, 279);
-    context.fillText("Сила на электрон — против E", width / 2, 295);
-  } else if (type === "pendulum") {
-    const period = pendulumPeriod(values.length, values.gravity);
-    const angleDegrees = pendulumAngle(
-      values.initialAngle,
-      values.length,
-      values.gravity,
-      time,
-    );
-    const angle = angleDegrees * Math.PI / 180;
-    const anchorX = width / 2;
-    const anchorY = 35;
-    const visualLength = 80 + values.length * 52;
-    const x = anchorX + Math.sin(angle) * visualLength;
-    const y = anchorY + Math.cos(angle) * visualLength;
-
-    context.shadowBlur = 0;
-    context.strokeStyle = "rgba(255,255,255,.3)";
-    context.lineWidth = 1.5;
-    context.setLineDash([5, 5]);
-    context.beginPath();
-    context.moveTo(anchorX, anchorY);
-    context.lineTo(anchorX, anchorY + visualLength);
-    context.stroke();
-    context.setLineDash([]);
-
-    context.shadowBlur = 18;
-    context.shadowColor = color;
-    context.strokeStyle = color;
-    context.lineWidth = 3;
-    context.beginPath();
-    context.moveTo(anchorX, anchorY);
-    context.lineTo(x, y);
-    context.stroke();
-    context.beginPath();
-    context.arc(x, y, 22, 0, Math.PI * 2);
-    context.fill();
-    context.fillStyle = "#fff";
-    context.font = "13px sans-serif";
-    context.textAlign = "left";
-    context.fillText(`L = ${formatNumber(values.length, 1)} м`, 18, 24);
-    context.fillText(`θ₀ = ${values.initialAngle}°`, 18, 286);
-    context.textAlign = "right";
-    context.fillText(`g = ${formatNumber(values.gravity, 2)} м/с²`, width - 18, 24);
-    context.fillText(`T ≈ ${formatNumber(period, 2)} с`, width - 18, 286);
-  } else if (type === "heat") {
-    const state = heatTransferState({ ...values, time });
-    const leftX = width * 0.25;
-    const rightX = width * 0.75;
-    const bodyWidth = Math.min(165, Math.max(95, width * 0.24));
-    const bodyHeight = 132;
-    const bodyTop = 92;
-    const temperatureColor = (temperature) => {
-      const normalized = Math.max(0, Math.min(100, temperature));
-      return `hsl(${220 - normalized * 2.2} 85% 55%)`;
-    };
-    const drawBody = (x, label, temperature, mass, specificHeat) => {
-      context.fillStyle = temperatureColor(temperature);
-      context.fillRect(x - bodyWidth / 2, bodyTop, bodyWidth, bodyHeight);
-      context.fillStyle = "#fff";
-      context.textAlign = "center";
-      context.font = "bold 13px sans-serif";
-      context.fillText(label, x, bodyTop + 24);
-      context.font = "bold 20px sans-serif";
-      context.fillText(`${formatNumber(temperature, 1)} °C`, x, bodyTop + 58);
-      context.font = "12px sans-serif";
-      context.fillText(`m = ${formatNumber(mass, 1)} кг`, x, bodyTop + 88);
-      context.fillText(`c = ${specificHeat}`, x, bodyTop + 108);
-      context.font = "10px sans-serif";
-      context.fillText("Дж/(кг·°C)", x, bodyTop + 124);
-    };
-
-    context.shadowBlur = 0;
-    context.fillStyle = "#fff";
-    context.textAlign = "center";
-    context.font = "bold 13px sans-serif";
-    if (state.equilibriumReached) {
-      context.fillText("Тепловое равновесие: T₁ = T₂", width / 2, 38);
-    } else {
-      const fromX = state.direction > 0 ? leftX + bodyWidth / 2 + 10 : rightX - bodyWidth / 2 - 10;
-      const toX = state.direction > 0 ? rightX - bodyWidth / 2 - 10 : leftX + bodyWidth / 2 + 10;
-      context.fillText(
-        state.direction > 0 ? "Тепло: тело 1 → тело 2" : "Тепло: тело 2 → тело 1",
-        width / 2,
-        38,
-      );
-      drawArrow(context, fromX, 68, toX, 68, "#fff", 3);
-    }
-
-    drawBody(leftX, "Тело 1", state.temperature1, values.mass1, values.specificHeat1);
-    drawBody(rightX, "Тело 2", state.temperature2, values.mass2, values.specificHeat2);
-    context.fillStyle = "rgba(255,255,255,.85)";
-    context.font = width < 560 ? "11px sans-serif" : "12px sans-serif";
-    if (width < 560) {
-      context.textAlign = "center";
-      context.fillText(`t = ${formatNumber(time, 1)} с · K = ${values.conductance} Вт/°C`, width / 2, 253);
-      context.fillText(`Мощность теплопередачи: ${formatNumber(state.heatFlowPower / 1000, 2)} кВт`, width / 2, 272);
-    } else {
-      context.textAlign = "left";
-      context.fillText(`t = ${formatNumber(time, 1)} с`, 18, 270);
-      context.textAlign = "center";
-      context.fillText(`K = ${values.conductance} Вт/°C`, width / 2, 270);
-      context.textAlign = "right";
-      context.fillText(`Мощность: ${formatNumber(state.heatFlowPower / 1000, 2)} кВт`, width - 18, 270);
-    }
-    context.textAlign = "center";
-    context.fillText(`Tравн = ${formatNumber(state.equilibrium, 1)} °C`, width / 2, 291);
-  } else if (type === "magnetism") {
-    const magnetHalfWidth = Math.min(90, width * 0.2);
-    const maximumFieldSpread = Math.min(88, width * 0.18);
-    const centerX = width / 2;
-    const centerY = 162;
-    const magnetHeight = 56;
-    const poleFlow = values.direction;
-    const northX = centerX - poleFlow * magnetHalfWidth;
-    const southX = centerX + poleFlow * magnetHalfWidth;
-    const lineCount = 2 + Math.round(values.strength * 1.5);
-    const fieldOpacity = 0.42 + values.strength * 0.22;
-    const fieldColor = `rgba(168, 85, 247, ${Math.min(0.95, fieldOpacity)})`;
-    const fieldWidth = 1.1 + values.strength * 0.75;
-
-    context.shadowBlur = 0;
-    for (let index = 0; index < lineCount; index += 1) {
-      const offset = 34 + index * (62 / Math.max(1, lineCount - 1));
-      [-1, 1].forEach((verticalDirection, sideIndex) => {
-        const start = { x: northX, y: centerY };
-        const end = { x: southX, y: centerY };
-        const spread = Math.min(maximumFieldSpread, 44 + offset * 0.48);
-        const control1 = {
-          x: northX - poleFlow * spread,
-          y: centerY + verticalDirection * offset,
-        };
-        const control2 = {
-          x: southX + poleFlow * spread,
-          y: centerY + verticalDirection * offset,
-        };
-        const pulseProgress = (time * (0.08 + values.strength * 0.04)
-          + (index * 2 + sideIndex) / (lineCount * 2)) % 1;
+    const interaction = values…5425 tokens truncated…          + (index * 2 + sideIndex) / (lineCount * 2)) % 1;
         drawMagneticFieldLine(
           context,
           [start, control1, control2, end],
@@ -853,67 +382,15 @@ function drawSimulation(context, width, type, color, values, time, newtonMotion)
     context.font = "12px sans-serif";
     context.fillText("Линии поля вне магнита направлены от N к S", width / 2, 286);
 
-    if (values.conductor !== "none") {
-      const wireX = Math.max(68, width - 76);
-      const wireY = 57;
-      const counterClockwise = values.conductor === "out";
-      const rotationDirection = counterClockwise ? -1 : 1;
-      const currentScale = 0.75 + values.current / 20;
-      const currentColor = "#22d3ee";
-      const circleCount = 2 + Math.round(values.current / 4);
-
-      context.strokeStyle = currentColor;
-      context.lineWidth = 1.2 + values.current / 12;
-      for (let index = 0; index < circleCount; index += 1) {
-        const radius = (14 + index * 10) * currentScale;
-        context.beginPath();
-        context.arc(wireX, wireY, radius, 0, Math.PI * 2);
-        context.stroke();
-
-        const arrowAngle = -Math.PI / 2;
-        const arrowX = wireX + Math.cos(arrowAngle) * radius;
-        const arrowY = wireY + Math.sin(arrowAngle) * radius;
-        const tangentAngle = arrowAngle + rotationDirection * Math.PI / 2;
-        addArrowHead(context, arrowX, arrowY, tangentAngle, currentColor, 6);
-
-        const movingAngle = rotationDirection * time * (0.7 + values.current * 0.08)
-          + index * Math.PI * 0.75;
-        context.fillStyle = "#fff";
-        context.beginPath();
-        context.arc(
-          wireX + Math.cos(movingAngle) * radius,
-          wireY + Math.sin(movingAngle) * radius,
-          2.5,
-          0,
-          Math.PI * 2,
-        );
-        context.fill();
-      }
-
-      context.fillStyle = "#0f172a";
-      context.beginPath();
-      context.arc(wireX, wireY, 13, 0, Math.PI * 2);
-      context.fill();
-      context.strokeStyle = "#fff";
-      context.lineWidth = 2;
-      context.stroke();
-      context.fillStyle = "#fff";
-      context.font = "bold 20px sans-serif";
-      context.textAlign = "center";
-      context.fillText(counterClockwise ? "•" : "×", wireX, wireY + 7);
-      context.font = "11px sans-serif";
-      context.fillText(`I = ${values.current} А`, wireX, 119);
-    }
   } else if (type === "projectile") {
     const alpha = values.angle * Math.PI / 180;
     const { flightTime, range, maxHeight } = projectileMetrics(values.velocity, values.angle, values.gravity);
     const groundY = 255;
-    const scaleX = Math.max(1, (width - 90) / Math.max(range, 1));
-    const scaleY = Math.min(4, 175 / Math.max(maxHeight, 1));
+    const scale = Math.min((width - 90) / Math.max(range, 1), 175 / Math.max(maxHeight, 1));
     const phaseTime = Math.min(Math.max(time, 0), flightTime);
     const point = (t) => ({
-      x: 45 + values.velocity * Math.cos(alpha) * t * scaleX,
-      y: groundY - (values.velocity * Math.sin(alpha) * t - values.gravity * t * t / 2) * scaleY,
+      x: 45 + values.velocity * Math.cos(alpha) * t * scale,
+      y: groundY - (values.velocity * Math.sin(alpha) * t - values.gravity * t * t / 2) * scale,
     });
     context.strokeStyle = "rgba(255,255,255,.45)";
     context.setLineDash([7, 7]);
@@ -924,6 +401,11 @@ function drawSimulation(context, width, type, color, values, time, newtonMotion)
     }
     context.stroke();
     context.setLineDash([]);
+    const guideLength = 55;
+    drawArrow(context, 45, groundY, 45 + Math.cos(alpha) * guideLength, groundY - Math.sin(alpha) * guideLength, "#fdba74", 2);
+    context.fillStyle = "#fdba74";
+    context.font = "bold 12px sans-serif";
+    context.fillText(`α = ${values.angle}°`, 55 + Math.cos(alpha) * guideLength, groundY - Math.sin(alpha) * guideLength);
     const current = point(phaseTime);
     context.fillStyle = color;
     context.beginPath();
@@ -1071,7 +553,7 @@ function drawSimulation(context, width, type, color, values, time, newtonMotion)
     context.fillText(beforeCollision ? "До столкновения" : "После столкновения", 20, 28);
     context.fillText(
       canCollide
-        ? (elastic ? "Упругое: тела разлетаются отдельно" : "Неупругое: тела движутся вместе")
+        ? (elastic ? "Упругое: тела разлетаются отдельно" : "Абсолютно неупругое: тела движутся вместе")
         : "При выбранных скоростях тела не сближаются",
       20,
       50,
@@ -1145,17 +627,17 @@ function drawSimulation(context, width, type, color, values, time, newtonMotion)
     context.fillStyle = "#fff";
     context.font = "15px sans-serif";
     context.textAlign = "center";
-    context.fillText(`U = ${values.voltage} В`, width / 2, 270);
+    context.fillText(`U = ${values.voltage} В`, width / 2, 286);
     context.fillText(`R = ${values.resistance} Ом`, width / 2, 155);
     context.fillText(`I = ${formatNumber(current)} А`, width / 2, 42);
 
-    const arrowY = bottom + 24;
+    const arrowY = bottom + 20;
     const arrowStart = width / 2 - 55 * direction;
     const arrowEnd = width / 2 + 55 * direction;
     if (Math.abs(current) > 1e-9) {
       drawArrow(context, arrowStart, arrowY, arrowEnd, arrowY, "#22c55e", 3);
       context.fillStyle = "#22c55e";
-      context.fillText("направление условного тока", width / 2, arrowY + 22);
+      context.fillText("направление условного тока", width / 2, arrowY + 18);
     } else {
       context.fillStyle = "#94a3b8";
       context.fillText("ток отсутствует", width / 2, arrowY + 8);
@@ -1361,30 +843,13 @@ export default function PhysicsCanvas({ type, color, onNewtonSolveForChange, onO
           ))}
         </div>
         <div className="canvas-actions">
-          {type === "gravity" && (
-            <>
-              <button
-                className="ghost-button"
-                disabled={values.distance <= config.controls[2].min}
-                onClick={() => updateControl(config.controls[2], Math.max(config.controls[2].min, values.distance / 2))}
-              >
-                r / 2 → 4F
-              </button>
-              <button
-                className="ghost-button"
-                disabled={values.distance >= config.controls[2].max}
-                onClick={() => updateControl(config.controls[2], Math.min(config.controls[2].max, values.distance * 2))}
-              >
-                2r → F / 4
-              </button>
-            </>
-          )}
-          <button className="secondary-button" onClick={() => setPaused((current) => !current)}>
+          {type !== "electric" && <button className="secondary-button" onClick={() => setPaused((current) => !current)}>
             {paused ? (locale === "en" ? "▶ Resume" : "▶ Продолжить") : (locale === "en" ? "⏸ Pause" : "⏸ Пауза")}
-          </button>
+          </button>}
           <button className="ghost-button" onClick={reset}>↻ {locale === "en" ? "Reset" : "Сбросить"}</button>
         </div>
       </div>
     </div>
   );
 }
+
