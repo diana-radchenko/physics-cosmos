@@ -1,5 +1,4 @@
 # Physics Cosmos
-
 **Physics Cosmos** is a bilingual, browser-based educational platform for learning school-level physics through interactive simulations, animated visualizations, formulas, self-check questions, and AI-assisted explanations.
 
 The project brings theory, experimentation, and guided help into one application. Students can study a physical law, change relevant parameters, observe the result on an HTML Canvas visualization, check their understanding, and ask the AI tutor a follow-up question without leaving the website.
@@ -8,7 +7,7 @@ The project brings theory, experimentation, and guided help into one application
 
 ### Custom 2D Physics Sandbox
 
-The general simulator is implemented from scratch in JavaScript with HTML Canvas 2D and does not depend on an external physics-engine library.
+The general simulator is implemented from scratch in JavaScript with HTML Canvas 2D and does not depend on an external physics engine library.
 
 - Add circles, squares, triangles, and stars with adjustable mass.
 - Change gravity, friction, and elasticity in real time.
@@ -25,8 +24,6 @@ Object collisions use an impulse-based response:
 4. apply a clamped tangential friction impulse;
 5. apply an approximate spin response to angular velocity.
 
-The animation loop uses `requestAnimationFrame`, capped frame delta, and one or two physics substeps depending on scene complexity. Performance depends on the user’s browser and device; the application does not guarantee a fixed frame rate.
-
 ### Nine Prepared Simulator Scenarios
 
 The **Choose a physics scenario** carousel currently includes:
@@ -40,8 +37,6 @@ The **Choose a physics scenario** carousel currently includes:
 7. Projectile motion
 8. Elastic-ball bouncing
 9. Elastic collision between bodies of unequal mass
-
-The scenarios use verified gravity conversions and tested collision relationships. With zero friction, objects no longer receive artificial velocity damping.
 
 ### Twelve Physics Topics
 
@@ -87,8 +82,6 @@ Current AI functionality includes:
 - request and conversation-length limits;
 - user-facing error handling.
 
-The OpenAI API key is read from the server-side Cloudflare environment and is never embedded in the frontend bundle.
-
 The tutor is not currently connected to the live state of the simulator or to a persistent student-progress model. AI-generated content should still be reviewed when used for assessment or high-stakes learning.
 
 ### Russian and English Interface
@@ -111,7 +104,6 @@ The application includes registration and login interfaces for two profile types
 - full name;
 - class number;
 - class specialization;
-- date of birth;
 - school number;
 - email and password.
 
@@ -253,56 +245,6 @@ physics-cosmos/
 ├── package.json
 └── vite.config.js
 ```
-
-## ✅ Verification
-
-Install dependencies and run:
-
-```bash
-npm install
-npm test
-npm run build
-```
-
-The automated test suite covers:
-
-- Newton’s second law and pause-state continuity;
-- inverse-square gravity;
-- electrostatic force;
-- Snell’s law and total internal reflection;
-- pendulum-period relationships;
-- heat-flow direction and energy conservation;
-- projectile metrics;
-- Hooke’s law;
-- elastic and inelastic collisions;
-- Ohm’s law;
-- the wave equation;
-- the nine-scenario simulator library;
-- Earth, Moon, and Mars gravity conversions;
-- free fall and weightlessness;
-- conservation of momentum and kinetic energy;
-- English and Russian AI language instructions.
-
-## 🚀 Deployment
-
-Create a production bundle:
-
-```bash
-npm run build
-```
-
-Deploy the `dist` directory to Cloudflare Pages:
-
-```bash
-npx wrangler pages deploy dist --project-name physics-cosmos --branch main
-```
-
-The public site is available at:
-
-**https://physics-cosmos.pages.dev**
-
-GitHub is used for source control and history. The repository does not currently document a GitHub Actions workflow that automatically deploys every commit.
-
 ## 📐 Engineering Notes
 
 ### Browser Physics
