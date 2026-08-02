@@ -9,9 +9,9 @@ const directories = {
     { id: "friend-sofia", icon: "👩‍💻", name: "София Новикова", nameEn: "Sofia Novikova", birthDate: "2011-01-14", schoolNumber: "42", city: "Самара", cityEn: "Samara", classNumber: "8А", details: "Изучает электричество", detailsEn: "Studying electricity", online: true },
   ],
   teachers: [
-    { id: "teacher-elena", icon: "👩‍🏫", name: "Елена Викторовна", nameEn: "Elena Viktorovna", details: "Механика и термодинамика", detailsEn: "Mechanics and thermodynamics", online: true },
-    { id: "teacher-sergey", icon: "👨‍🏫", name: "Сергей Андреевич", nameEn: "Sergey Andreevich", details: "Электродинамика", detailsEn: "Electrodynamics", online: false },
-    { id: "teacher-olga", icon: "👩‍🔬", name: "Ольга Михайловна", nameEn: "Olga Mikhailovna", details: "Оптика и астрономия", detailsEn: "Optics and astronomy", online: true },
+    { id: "teacher-elena", icon: "👩‍🏫", name: "Елена Викторовна", nameEn: "Elena Viktorovna", subject: "Физика", subjectEn: "Physics", schoolNumber: "57", details: "Механика и термодинамика", detailsEn: "Mechanics and thermodynamics", online: true },
+    { id: "teacher-sergey", icon: "👨‍🏫", name: "Сергей Андреевич", nameEn: "Sergey Andreevich", subject: "Физика", subjectEn: "Physics", schoolNumber: "125", details: "Электродинамика", detailsEn: "Electrodynamics", online: false },
+    { id: "teacher-olga", icon: "👩‍🔬", name: "Ольга Михайловна", nameEn: "Olga Mikhailovna", subject: "Астрономия", subjectEn: "Astronomy", schoolNumber: "42", details: "Оптика и астрономия", detailsEn: "Optics and astronomy", online: true },
   ],
 };
 
@@ -34,6 +34,7 @@ export default function ContactsPage({ type, username, onRequireLogin, locale })
   const [activeId, setActiveId] = useState(null);
   const [search, setSearch] = useState("");
   const [friendSearch, setFriendSearch] = useState({ birthDate: "", schoolNumber: "", city: "", classNumber: "" });
+  const [teacherSearch, setTeacherSearch] = useState({ subject: "", schoolNumber: "" });
   const [value, setValue] = useState("");
 
   useEffect(() => localStorage.setItem(`${storagePrefix}-contacts`, JSON.stringify(contactIds)), [contactIds, storagePrefix]);
@@ -49,13 +50,16 @@ export default function ContactsPage({ type, username, onRequireLogin, locale })
   const contacts = directory.filter((person) => contactIds.includes(person.id));
   const active = directory.find((person) => person.id === activeId);
   const candidates = useMemo(
-    () => directory.filter((person) => person.name.toLowerCase().includes(search.toLowerCase()) && (isTeachers || (
+    () => directory.filter((person) => person.name.toLowerCase().includes(search.toLowerCase()) && (isTeachers ? (
+      (!teacherSearch.subject || `${person.subject} ${person.subjectEn}`.toLowerCase().includes(teacherSearch.subject.toLowerCase())) &&
+      (!teacherSearch.schoolNumber || person.schoolNumber.includes(teacherSearch.schoolNumber))
+    ) : (
       (!friendSearch.birthDate || person.birthDate === friendSearch.birthDate) &&
       (!friendSearch.schoolNumber || person.schoolNumber.toLowerCase().includes(friendSearch.schoolNumber.toLowerCase())) &&
       (!friendSearch.city || `${person.city} ${person.cityEn}`.toLowerCase().includes(friendSearch.city.toLowerCase())) &&
       (!friendSearch.classNumber || person.classNumber.toLowerCase().includes(friendSearch.classNumber.toLowerCase()))
     ))),
-    [directory, search, friendSearch, isTeachers],
+    [directory, search, friendSearch, teacherSearch, isTeachers],
   );
 
   const addContact = (id) => {
@@ -102,13 +106,17 @@ export default function ContactsPage({ type, username, onRequireLogin, locale })
               <label>{l("Город", "City")}<input value={friendSearch.city} onChange={(event) => setFriendSearch({ ...friendSearch, city: event.target.value })} /></label>
               <label>{l("Класс", "Class")}<input value={friendSearch.classNumber} onChange={(event) => setFriendSearch({ ...friendSearch, classNumber: event.target.value })} /></label>
             </div>}
+            {isTeachers && <div className="registration-fields contact-search-fields">
+              <label>{l("Предмет", "Subject")}<input value={teacherSearch.subject} onChange={(event) => setTeacherSearch({ ...teacherSearch, subject: event.target.value })} /></label>
+              <label>{l("Номер школы", "School number")}<input value={teacherSearch.schoolNumber} onChange={(event) => setTeacherSearch({ ...teacherSearch, schoolNumber: event.target.value })} /></label>
+            </div>}
             <div className="directory-list">
-              {!candidates.length && <div className="empty-state"><span>🔎</span><h3>{l("Друг не найден", "Friend not found")}</h3><p>{l("Проверьте введённые данные.", "Check the search details.")}</p></div>}
+              {!candidates.length && <div className="empty-state"><span>🔎</span><h3>{isTeachers ? l("Учитель не найден", "Teacher not found") : l("Друг не найден", "Friend not found")}</h3><p>{l("Проверьте введённые данные.", "Check the search details.")}</p></div>}
               {candidates.map((person) => {
                 const added = contactIds.includes(person.id);
                 return <article className="person-row" key={person.id}>
                   <span className="avatar">{person.icon}</span>
-                  <div><strong>{locale === "en" ? person.nameEn : person.name}</strong><small>{!isTeachers && `${person.birthDate} · ${l("школа", "school")} №${person.schoolNumber} · ${locale === "en" ? person.cityEn : person.city} · ${person.classNumber} · `}{locale === "en" ? person.detailsEn : person.details} · {person.online ? l("В сети", "Online") : l("Не в сети", "Offline")}</small></div>
+                  <div><strong>{locale === "en" ? person.nameEn : person.name}</strong><small>{isTeachers ? `${locale === "en" ? person.subjectEn : person.subject} · ${l("школа", "school")} №${person.schoolNumber} · ` : `${person.birthDate} · ${l("школа", "school")} №${person.schoolNumber} · ${locale === "en" ? person.cityEn : person.city} · ${person.classNumber} · `}{locale === "en" ? person.detailsEn : person.details} · {person.online ? l("В сети", "Online") : l("Не в сети", "Offline")}</small></div>
                   <button className="primary-button small-button" disabled={added} onClick={() => addContact(person.id)}>{added ? l("Добавлен", "Added") : l("Добавить", "Add")}</button>
                 </article>;
               })}
