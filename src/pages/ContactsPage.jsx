@@ -3,10 +3,10 @@ import { text } from "../i18n.js";
 
 const directories = {
   friends: [
-    { id: "friend-alex", icon: "👨‍🎓", name: "Александр Петров", nameEn: "Alexander Petrov", details: "Изучает механику", detailsEn: "Studying mechanics", online: true },
-    { id: "friend-maria", icon: "👩‍🔬", name: "Мария Сидорова", nameEn: "Maria Sidorova", details: "Увлекается оптикой", detailsEn: "Interested in optics", online: true },
-    { id: "friend-ivan", icon: "🧑‍🚀", name: "Иван Кузнецов", nameEn: "Ivan Kuznetsov", details: "Готовится к олимпиаде", detailsEn: "Preparing for a physics contest", online: false },
-    { id: "friend-sofia", icon: "👩‍💻", name: "София Новикова", nameEn: "Sofia Novikova", details: "Изучает электричество", detailsEn: "Studying electricity", online: true },
+    { id: "friend-alex", icon: "👨‍🎓", name: "Александр Петров", nameEn: "Alexander Petrov", birthDate: "2010-04-18", schoolNumber: "57", city: "Москва", cityEn: "Moscow", classNumber: "9А", details: "Изучает механику", detailsEn: "Studying mechanics", online: true },
+    { id: "friend-maria", icon: "👩‍🔬", name: "Мария Сидорова", nameEn: "Maria Sidorova", birthDate: "2009-11-03", schoolNumber: "125", city: "Санкт-Петербург", cityEn: "Saint Petersburg", classNumber: "10Б", details: "Увлекается оптикой", detailsEn: "Interested in optics", online: true },
+    { id: "friend-ivan", icon: "🧑‍🚀", name: "Иван Кузнецов", nameEn: "Ivan Kuznetsov", birthDate: "2010-07-21", schoolNumber: "18", city: "Казань", cityEn: "Kazan", classNumber: "9В", details: "Готовится к олимпиаде", detailsEn: "Preparing for a physics contest", online: false },
+    { id: "friend-sofia", icon: "👩‍💻", name: "София Новикова", nameEn: "Sofia Novikova", birthDate: "2011-01-14", schoolNumber: "42", city: "Самара", cityEn: "Samara", classNumber: "8А", details: "Изучает электричество", detailsEn: "Studying electricity", online: true },
   ],
   teachers: [
     { id: "teacher-elena", icon: "👩‍🏫", name: "Елена Викторовна", nameEn: "Elena Viktorovna", details: "Механика и термодинамика", detailsEn: "Mechanics and thermodynamics", online: true },
@@ -33,6 +33,7 @@ export default function ContactsPage({ type, username, onRequireLogin, locale })
   const [chats, setChats] = useState(() => read(`${storagePrefix}-chats`, {}));
   const [activeId, setActiveId] = useState(null);
   const [search, setSearch] = useState("");
+  const [friendSearch, setFriendSearch] = useState({ birthDate: "", schoolNumber: "", city: "", classNumber: "" });
   const [value, setValue] = useState("");
 
   useEffect(() => localStorage.setItem(`${storagePrefix}-contacts`, JSON.stringify(contactIds)), [contactIds, storagePrefix]);
@@ -48,8 +49,13 @@ export default function ContactsPage({ type, username, onRequireLogin, locale })
   const contacts = directory.filter((person) => contactIds.includes(person.id));
   const active = directory.find((person) => person.id === activeId);
   const candidates = useMemo(
-    () => directory.filter((person) => person.name.toLowerCase().includes(search.toLowerCase())),
-    [directory, search],
+    () => directory.filter((person) => person.name.toLowerCase().includes(search.toLowerCase()) && (isTeachers || (
+      (!friendSearch.birthDate || person.birthDate === friendSearch.birthDate) &&
+      (!friendSearch.schoolNumber || person.schoolNumber.toLowerCase().includes(friendSearch.schoolNumber.toLowerCase())) &&
+      (!friendSearch.city || `${person.city} ${person.cityEn}`.toLowerCase().includes(friendSearch.city.toLowerCase())) &&
+      (!friendSearch.classNumber || person.classNumber.toLowerCase().includes(friendSearch.classNumber.toLowerCase()))
+    ))),
+    [directory, search, friendSearch, isTeachers],
   );
 
   const addContact = (id) => {
@@ -90,12 +96,19 @@ export default function ContactsPage({ type, username, onRequireLogin, locale })
         {mode === "add" ? (
           <div className="contact-directory">
             <input className="search-input" value={search} onChange={(event) => setSearch(event.target.value)} placeholder={isTeachers ? l("Найти учителя...", "Find a teacher...") : l("Найти друга...", "Find a friend...")} />
+            {!isTeachers && <div className="registration-fields contact-search-fields">
+              <label>{l("Дата рождения", "Date of birth")}<input type="date" value={friendSearch.birthDate} onChange={(event) => setFriendSearch({ ...friendSearch, birthDate: event.target.value })} /></label>
+              <label>{l("Номер школы", "School number")}<input value={friendSearch.schoolNumber} onChange={(event) => setFriendSearch({ ...friendSearch, schoolNumber: event.target.value })} /></label>
+              <label>{l("Город", "City")}<input value={friendSearch.city} onChange={(event) => setFriendSearch({ ...friendSearch, city: event.target.value })} /></label>
+              <label>{l("Класс", "Class")}<input value={friendSearch.classNumber} onChange={(event) => setFriendSearch({ ...friendSearch, classNumber: event.target.value })} /></label>
+            </div>}
             <div className="directory-list">
+              {!candidates.length && <div className="empty-state"><span>🔎</span><h3>{l("Друг не найден", "Friend not found")}</h3><p>{l("Проверьте введённые данные.", "Check the search details.")}</p></div>}
               {candidates.map((person) => {
                 const added = contactIds.includes(person.id);
                 return <article className="person-row" key={person.id}>
                   <span className="avatar">{person.icon}</span>
-                  <div><strong>{locale === "en" ? person.nameEn : person.name}</strong><small>{locale === "en" ? person.detailsEn : person.details} · {person.online ? l("В сети", "Online") : l("Не в сети", "Offline")}</small></div>
+                  <div><strong>{locale === "en" ? person.nameEn : person.name}</strong><small>{!isTeachers && `${person.birthDate} · ${l("школа", "school")} №${person.schoolNumber} · ${locale === "en" ? person.cityEn : person.city} · ${person.classNumber} · `}{locale === "en" ? person.detailsEn : person.details} · {person.online ? l("В сети", "Online") : l("Не в сети", "Offline")}</small></div>
                   <button className="primary-button small-button" disabled={added} onClick={() => addContact(person.id)}>{added ? l("Добавлен", "Added") : l("Добавить", "Add")}</button>
                 </article>;
               })}
