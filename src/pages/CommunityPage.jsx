@@ -1,51 +1,37 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { text } from "../i18n.js";
 
-const initialMessages = [
-  ["👩‍🎓", "Анна", "Anna", "Привет всем! Кто-нибудь может объяснить закон сохранения энергии простыми словами?", "Hi everyone! Can someone explain the law of conservation of energy in simple terms?", "15:32"],
-  ["👨‍🔬", "Дмитрий", "Dmitry", "Энергия не исчезает — она только переходит из одной формы в другую.", "Energy does not disappear; it only changes from one form to another.", "15:38"],
-  ["👩‍🚀", "София", "Sofia", "Например, при падении потенциальная энергия превращается в кинетическую.", "For example, as an object falls, potential energy becomes kinetic energy.", "15:40"],
-];
+const starterArticles = [{ id: "welcome", titleRu: "Добро пожаловать в сообщество", titleEn: "Welcome to the community", bodyRu: "Здесь администратор публикует полезные материалы по физике, новости проекта и рекомендации для учеников и учителей.", bodyEn: "Here the site administrator publishes useful physics materials, project news, and recommendations for students and teachers.", author: "Physics Cosmos", createdAt: "2026-08-02T00:00:00.000Z" }];
 
-export default function CommunityPage({ locale }) {
+function readArticles() {
+  try { return JSON.parse(localStorage.getItem("physics-articles") || "null") || starterArticles; }
+  catch { return starterArticles; }
+}
+
+export default function CommunityPage({ locale, username, onRequireLogin }) {
   const l = (ru, en) => text(locale, ru, en);
-  const [messages, setMessages] = useState(initialMessages);
-  const [value, setValue] = useState("");
+  const [articles, setArticles] = useState(readArticles);
+  const [titleRu, setTitleRu] = useState("");
+  const [titleEn, setTitleEn] = useState("");
+  const [bodyRu, setBodyRu] = useState("");
+  const [bodyEn, setBodyEn] = useState("");
+  useEffect(() => localStorage.setItem("physics-articles", JSON.stringify(articles)), [articles]);
 
-  const send = (event) => {
+  const publish = (event) => {
     event.preventDefault();
-    if (!value.trim()) return;
-    setMessages([...messages, ["🧑‍🚀", l("Ты", "You"), l("Ты", "You"), value.trim(), value.trim(), new Date().toLocaleTimeString(locale === "en" ? "en" : "ru", { hour: "2-digit", minute: "2-digit" })]]);
-    setValue("");
+    if (!username) return onRequireLogin();
+    if (![titleRu, titleEn, bodyRu, bodyEn].every((value) => value.trim())) return;
+    setArticles([{ id: crypto.randomUUID(), titleRu: titleRu.trim(), titleEn: titleEn.trim(), bodyRu: bodyRu.trim(), bodyEn: bodyEn.trim(), author: username, createdAt: new Date().toISOString() }, ...articles]);
+    setTitleRu(""); setTitleEn(""); setBodyRu(""); setBodyEn("");
   };
 
-  return (
-    <section className="section page-section narrow-page">
-      <div className="section-heading">
-        <p className="eyebrow">{l("Учимся вместе", "Learning together")}</p>
-        <h1>{l("Чат сообщества", "Community chat")}</h1>
-        <p>{l("Общайся с учениками, делись знаниями и задавай вопросы.", "Talk with students, share knowledge, and ask questions.")}</p>
-      </div>
-      <div className="chat-window">
-        <div className="online-strip"><span className="online-dot" /> {l("1 247 пользователей онлайн", "1,247 users online")}</div>
-        <div className="community-messages">
-          {messages.map(([avatar, nameRu, nameEn, bodyRu, bodyEn, time], index) => (
-            <article className="community-message" key={index}>
-              <span className="avatar">{avatar}</span>
-              <div><header><strong>{locale === "en" ? nameEn : nameRu}</strong><time>{time}</time></header><p>{locale === "en" ? bodyEn : bodyRu}</p></div>
-            </article>
-          ))}
-        </div>
-        <form className="chat-input" onSubmit={send}>
-          <input value={value} onChange={(event) => setValue(event.target.value)} placeholder={l("Напиши сообщение...", "Write a message...")} />
-          <button className="primary-button">{l("Отправить", "Send")}</button>
-        </form>
-      </div>
-      <div className="tips-grid">
-        <div>🎯 <strong>{l("Помогай другим", "Help others")}</strong><span>{l("Делись опытом", "Share your experience")}</span></div>
-        <div>💬 <strong>{l("Задавай вопросы", "Ask questions")}</strong><span>{l("Не бойся уточнять", "Do not be afraid to ask")}</span></div>
-        <div>🤝 <strong>{l("Будь вежлив", "Be kind")}</strong><span>{l("Уважай участников", "Respect the community")}</span></div>
-      </div>
-    </section>
-  );
+  return <section className="section page-section narrow-page">
+    <div className="section-heading"><p className="eyebrow">{l("Знания сообщества", "Community knowledge")}</p><h1>{l("Статьи", "Articles")}</h1><p>{l("Материалы для учеников и учителей от администратора сайта.", "Materials for students and teachers from the site administrator.")}</p></div>
+    <div className="articles-list">{articles.map((article) => <article className="glass-panel story-panel" key={article.id}><div><p className="eyebrow">{new Date(article.createdAt).toLocaleDateString(locale === "en" ? "en-US" : "ru-RU")} · {article.author}</p><h2>{locale === "en" ? article.titleEn : article.titleRu}</h2><p>{locale === "en" ? article.bodyEn : article.bodyRu}</p></div></article>)}</div>
+    <form className="glass-panel article-editor" onSubmit={publish}>
+      <h2>{l("Публикация администратора", "Administrator publishing")}</h2>
+      {!username && <div className="account-notice"><span>🔐</span><p>{l("Войдите, чтобы открыть форму публикации.", "Log in to open the publishing form.")}</p><button type="button" className="primary-button" onClick={onRequireLogin}>{l("Войти", "Log in")}</button></div>}
+      {username && <><label>{l("Заголовок на русском", "Russian title")}<input value={titleRu} onChange={(e) => setTitleRu(e.target.value)} required /></label><label>{l("Заголовок на английском", "English title")}<input value={titleEn} onChange={(e) => setTitleEn(e.target.value)} required /></label><label>{l("Текст на русском", "Russian text")}<textarea value={bodyRu} onChange={(e) => setBodyRu(e.target.value)} required /></label><label>{l("Текст на английском", "English text")}<textarea value={bodyEn} onChange={(e) => setBodyEn(e.target.value)} required /></label><button className="primary-button">{l("Опубликовать", "Publish")}</button></>}
+    </form>
+  </section>;
 }

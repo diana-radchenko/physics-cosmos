@@ -13,6 +13,13 @@
   --muted: #a7b0ca;
 }
 
+.articles-list { display: grid; gap: 18px; margin-bottom: 28px; }
+.articles-list .story-panel { display: block; padding: 26px; }
+.article-editor { display: grid; gap: 16px; padding: 26px; }
+.article-editor label { display: grid; gap: 8px; color: var(--muted); font-weight: 700; }
+.article-editor input, .article-editor textarea { width: 100%; border: 1px solid var(--border); border-radius: 12px; background: rgba(6,10,30,.8); color: white; padding: 12px; font: inherit; }
+.article-editor textarea { min-height: 120px; resize: vertical; }
+
 * { box-sizing: border-box; }
 html { scroll-behavior: smooth; }
 body { margin: 0; min-width: 320px; min-height: 100vh; overflow-x: hidden; }

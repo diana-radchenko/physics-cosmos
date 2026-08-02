@@ -1,7 +1,7 @@
 export const text = (locale, ru, en) => locale === "en" ? en : ru;
 
 export const navLabels = {
-  en: { home: "Home", physics: "Physics", simulator: "Simulator", ai: "AI", chat: "Community", friends: "Friends", teachers: "Teachers", about: "About" },
+  en: { home: "Home", physics: "Physics", simulator: "Simulator", ai: "AI", chat: "Articles", friends: "Friends", teachers: "Teachers", about: "About" },
 };
 
 export const englishTopics = {

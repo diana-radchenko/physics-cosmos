@@ -236,7 +236,7 @@ export const navItems = [
   { id: "physics", label: "Физика", icon: "⚛" },
   { id: "simulator", label: "Симулятор", icon: "◉" },
   { id: "ai", label: "AI", icon: "✦" },
-  { id: "chat", label: "Чат", icon: "💬" },
+  { id: "chat", label: "Статьи", icon: "📰" },
   { id: "friends", label: "Друзья", icon: "👥" },
   { id: "teachers", label: "Учителя", icon: "👩‍🏫" },
   { id: "about", label: "Обо мне", icon: "ⓘ" },
