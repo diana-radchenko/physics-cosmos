@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import { text } from "../i18n.js";
+import { createExperimentSetup, gravityMs2FromControl, simulatorExperiments as experiments } from "../data/simulatorExperiments.js";
 
 const shapeStyles = {
   circle: { label: "Круг", labelEn: "Circle", symbol: "●" },
@@ -11,56 +12,6 @@ const shapeStyles = {
 const colors = ["#22d3ee", "#8b5cf6", "#ec4899", "#10b981", "#f59e0b"];
 const MAX_OBJECTS = 40;
 const COLLISION_CELL_SIZE = 110;
-
-const experiments = [
-  {
-    id: "sandbox",
-    icon: "🧪",
-    title: "Песочница",
-    titleEn: "Sandbox",
-    description: "Добавляй собственные объекты и вручную настраивай физику.",
-    descriptionEn: "Add your own objects and adjust the physics manually.",
-    law: "Свободный эксперимент",
-    lawEn: "Free experiment",
-  },
-  {
-    id: "fall",
-    icon: "🍎",
-    title: "Свободное падение",
-    titleEn: "Free fall",
-    description: "Тела разной массы падают с одинаковым ускорением.",
-    descriptionEn: "Objects of different masses fall with the same acceleration.",
-    law: "a = g",
-  },
-  {
-    id: "collision",
-    icon: "💥",
-    title: "Столкновение",
-    titleEn: "Collision",
-    description: "Два тела обмениваются импульсом при почти упругом ударе.",
-    descriptionEn: "Two objects exchange momentum in a nearly elastic collision.",
-    law: "m₁v₁ + m₂v₂ = const",
-  },
-  {
-    id: "moon",
-    icon: "🌙",
-    title: "Лунная гравитация",
-    titleEn: "Lunar gravity",
-    description: "Слабая гравитация создаёт высокие и долгие прыжки.",
-    descriptionEn: "Weak gravity produces high, long-lasting jumps.",
-    law: "gₗ ≈ 1,62 м/с²",
-    lawEn: "gₗ ≈ 1.62 m/s²",
-  },
-  {
-    id: "weightless",
-    icon: "🛰️",
-    title: "Невесомость",
-    titleEn: "Weightlessness",
-    description: "Без гравитации тела равномерно движутся и сталкиваются.",
-    descriptionEn: "Without gravity, objects move uniformly and collide.",
-    law: "F = 0 → v = const",
-  },
-];
 
 function makeObject({ shape, mass, radius, x, y, vx = 0, vy = 0, color, angularVelocity = 0 }) {
   return {
@@ -265,8 +216,9 @@ export default function SimulatorPage({ locale }) {
 
       objects.forEach((object) => {
         object.vy += acceleration * deltaTime;
-        object.vx *= Math.pow(0.999, deltaTime * 60);
-        object.vy *= Math.pow(0.9995, deltaTime * 60);
+        const drag = Math.max(0, 1 - frictionValue * deltaTime * 0.12);
+        object.vx *= drag;
+        object.vy *= drag;
         object.x += object.vx * deltaTime;
         object.y += object.vy * deltaTime;
         object.angle += object.angularVelocity * deltaTime;
@@ -380,37 +332,9 @@ export default function SimulatorPage({ locale }) {
     const canvas = canvasRef.current;
     const width = Math.max(320, canvas.clientWidth);
     const height = Math.max(360, canvas.clientHeight);
-    let settings = { gravity: 1.7, friction: 0.35, elasticity: 0.65 };
-    let objects = [];
-
-    if (experimentId === "fall") {
-      settings = { gravity: 1.7, friction: 0.08, elasticity: 0.35 };
-      objects = [
-        makeObject({ shape: "circle", mass: 2, radius: 25, x: width * 0.36, y: 70, color: colors[0] }),
-        makeObject({ shape: "circle", mass: 16, radius: 43, x: width * 0.64, y: 52, color: colors[2] }),
-      ];
-    } else if (experimentId === "collision") {
-      settings = { gravity: 0, friction: 0.02, elasticity: 0.98 };
-      objects = [
-        makeObject({ shape: "circle", mass: 5, radius: 32, x: width * 0.25, y: height * 0.5, vx: 230, color: colors[0] }),
-        makeObject({ shape: "circle", mass: 5, radius: 32, x: width * 0.75, y: height * 0.5, vx: -230, color: colors[2] }),
-      ];
-    } else if (experimentId === "moon") {
-      settings = { gravity: 0.28, friction: 0.08, elasticity: 0.78 };
-      objects = [
-        makeObject({ shape: "circle", mass: 5, radius: 28, x: width * 0.18, y: height - 48, vx: 185, vy: -330, color: colors[0] }),
-        makeObject({ shape: "star", mass: 4, radius: 25, x: width * 0.5, y: height - 45, vx: 80, vy: -390, color: colors[4], angularVelocity: 1.4 }),
-        makeObject({ shape: "square", mass: 7, radius: 30, x: width * 0.78, y: height - 50, vx: -145, vy: -310, color: colors[1], angularVelocity: -0.9 }),
-      ];
-    } else if (experimentId === "weightless") {
-      settings = { gravity: 0, friction: 0, elasticity: 1 };
-      objects = [
-        makeObject({ shape: "circle", mass: 4, radius: 26, x: width * 0.2, y: height * 0.25, vx: 125, vy: 70, color: colors[0] }),
-        makeObject({ shape: "square", mass: 6, radius: 29, x: width * 0.72, y: height * 0.3, vx: -105, vy: 95, color: colors[1], angularVelocity: 0.8 }),
-        makeObject({ shape: "triangle", mass: 5, radius: 28, x: width * 0.36, y: height * 0.72, vx: 90, vy: -115, color: colors[3], angularVelocity: -0.7 }),
-        makeObject({ shape: "star", mass: 3, radius: 24, x: width * 0.78, y: height * 0.72, vx: -135, vy: -80, color: colors[4], angularVelocity: 1.2 }),
-      ];
-    }
+    const setup = createExperimentSetup(experimentId, width, height, colors);
+    const settings = setup.settings;
+    const objects = setup.objects.map((item) => makeObject(item));
 
     setGravity(settings.gravity);
     setFriction(settings.friction);
@@ -518,7 +442,7 @@ export default function SimulatorPage({ locale }) {
           <section className="physics-settings glass-panel">
             <h2>{l("Физика", "Physics")}</h2>
             <label>
-              {l("Гравитация", "Gravity")}: {gravity.toFixed(1)}
+              {l("Гравитация", "Gravity")}: {gravityMs2FromControl(gravity).toFixed(2)} {l("м/с²", "m/s²")}
               <input type="range" min="0" max="2.5" step="0.1" value={gravity} onChange={(event) => setGravity(Number(event.target.value))} />
             </label>
             <label>
