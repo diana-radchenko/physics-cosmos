@@ -7,7 +7,7 @@ The project brings theory, experimentation, and guided help into one application
 
 ### Custom 2D Physics Sandbox
 
-The general simulator is implemented from scratch in JavaScript with HTML Canvas 2D and does not depend on an external physics engine library.
+The general simulator is implemented in JavaScript with HTML Canvas 2D and does not depend on an external physics engine library.
 
 - Add circles, squares, triangles, and stars with adjustable mass.
 - Change gravity, friction, and elasticity in real time.
