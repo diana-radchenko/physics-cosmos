@@ -175,13 +175,6 @@ export default function CommunityPage({ locale, username, onRequireLogin }) {
 
   return <section className="section page-section narrow-page">
     <div className="section-heading"><p className="eyebrow">{l("Знания сообщества", "Community knowledge")}</p><h1>{l("Статьи", "Articles")}</h1><p>{l("Материалы для учеников и учителей от администратора сайта.", "Materials for students and teachers from the site administrator.")}</p>{username && <button className="primary-button article-create-button" onClick={() => { cancelEditing(); requestAnimationFrame(() => editorRef.current?.scrollIntoView({ behavior: "smooth", block: "start" })); }}>✨ {l("Создать статью с AI", "Create an article with AI")}</button>}</div>
-    <form ref={editorRef} className="glass-panel article-editor" onSubmit={publish}>
-      <h2>{editingId ? l("Редактирование статьи с AI", "Edit the article with AI") : l("Публикация с AI-помощником", "Publish with AI assistance")}</h2>
-      <p className="article-editor-intro">{l("Напишите черновик, затем нажмите «Форматировать с AI». Результат останется в редакторе — его можно проверить и изменить перед публикацией.", "Write a draft, then select “Format with AI”. The result stays in the editor so you can review and change it before publishing.")}</p>
-      {storageError && <p className="auth-error">{l("Изображения занимают слишком много места. Уменьшите их количество или размер.", "The images use too much storage. Reduce their number or size.")}</p>}
-      {!username && <div className="account-notice"><span>🔐</span><p>{l("Войдите, чтобы открыть AI-редактор и форму публикации.", "Log in to open the AI editor and publishing form.")}</p><button type="button" className="primary-button" onClick={onRequireLogin}>{l("Войти", "Log in")}</button></div>}
-      {username && <><label>{l("Заголовок на русском", "Russian title")}<input value={titleRu} onChange={(e) => setTitleRu(e.target.value)} required /></label><label>{l("Заголовок на английском", "English title")}<input value={titleEn} onChange={(e) => setTitleEn(e.target.value)} required /></label><ArticleTextEditor label={l("Текст на русском", "Russian text")} value={bodyRu} onChange={setBodyRu} locale={locale} contentLocale="ru" /><ArticleTextEditor label={l("Текст на английском", "English text")} value={bodyEn} onChange={setBodyEn} locale={locale} contentLocale="en" /><div className="article-editor-actions"><button className="primary-button">{editingId ? l("Сохранить изменения", "Save changes") : l("Опубликовать", "Publish")}</button>{editingId && <button type="button" className="ghost-button" onClick={cancelEditing}>{l("Отменить", "Cancel")}</button>}</div></>}
-    </form>
     <div className="articles-list">{articles.map((article) => {
       const body = locale === "en" ? article.bodyEn : article.bodyRu;
       return <article className="glass-panel story-panel" key={article.id}>
@@ -194,6 +187,13 @@ export default function CommunityPage({ locale, username, onRequireLogin }) {
         </div>
       </article>;
     })}</div>
+    <form ref={editorRef} className="glass-panel article-editor article-editor-below" onSubmit={publish}>
+      <h2>{editingId ? l("Редактирование статьи с AI", "Edit the article with AI") : l("Публикация с AI-помощником", "Publish with AI assistance")}</h2>
+      <p className="article-editor-intro">{l("Напишите черновик, затем нажмите «Форматировать с AI». Результат останется в редакторе — его можно проверить и изменить перед публикацией.", "Write a draft, then select “Format with AI”. The result stays in the editor so you can review and change it before publishing.")}</p>
+      {storageError && <p className="auth-error">{l("Изображения занимают слишком много места. Уменьшите их количество или размер.", "The images use too much storage. Reduce their number or size.")}</p>}
+      {!username && <div className="account-notice"><span>🔐</span><p>{l("Войдите, чтобы открыть AI-редактор и форму публикации.", "Log in to open the AI editor and publishing form.")}</p><button type="button" className="primary-button" onClick={onRequireLogin}>{l("Войти", "Log in")}</button></div>}
+      {username && <><label>{l("Заголовок на русском", "Russian title")}<input value={titleRu} onChange={(e) => setTitleRu(e.target.value)} required /></label><label>{l("Заголовок на английском", "English title")}<input value={titleEn} onChange={(e) => setTitleEn(e.target.value)} required /></label><ArticleTextEditor label={l("Текст на русском", "Russian text")} value={bodyRu} onChange={setBodyRu} locale={locale} contentLocale="ru" /><ArticleTextEditor label={l("Текст на английском", "English text")} value={bodyEn} onChange={setBodyEn} locale={locale} contentLocale="en" /><div className="article-editor-actions"><button className="primary-button">{editingId ? l("Сохранить изменения", "Save changes") : l("Опубликовать", "Publish")}</button>{editingId && <button type="button" className="ghost-button" onClick={cancelEditing}>{l("Отменить", "Cancel")}</button>}</div></>}
+    </form>
   </section>;
 }
-
+

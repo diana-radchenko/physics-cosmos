@@ -30,6 +30,7 @@
 .article-colored-text { font-weight: 650; }
 .article-create-button { margin-top: 16px; }
 .article-editor { display: grid; gap: 16px; padding: 26px; scroll-margin-top: 145px; }
+.article-editor-below { margin-top: 34px; }
 .article-editor-intro { margin: -8px 0 2px; color: var(--muted); }
 .article-editor-actions, .article-meta { display: flex; align-items: center; gap: 10px; }
 .article-meta { justify-content: space-between; }
@@ -295,9 +296,7 @@ input[type="range"] { display: block; width: 100%; margin-top: 8px; accent-color
 .quiz-options button.selected { border-color: #67e8f9; background: rgba(34,211,238,.13); }
 .quiz-options button.correct { border-color: #22c55e; background: rgba(34,197,94,.18); }
 .quiz-options button.wrong { border-color: #ef4444; background: rgba(239,68,68,.18); }
-.result { margin: 12px 0 0; font-weight: 700; }
-.res…272 tokens truncated…0 12px 28px rgba(34,211,238,.09); }
-.experiment-buttons span { display: block; margin-bottom: 7px; font-size: 1.45rem; }
+.result …304 tokens truncated…rgin-bottom: 7px; font-size: 1.45rem; }
 .experiment-buttons strong, .experiment-buttons small { display: block; }
 .experiment-buttons strong { font-size: .82rem; }
 .experiment-buttons small { margin-top: 6px; color: var(--muted); font-size: .67rem; line-height: 1.35; }
@@ -403,6 +402,7 @@ input[type="range"] { display: block; width: 100%; margin-top: 8px; accent-color
 .modal-card input { margin-top: 6px; }
 .privacy-note { display: block; margin-top: 20px; color: var(--muted); text-align: center; }
 .auth-error { margin: 0 0 14px; color: #fca5a5 !important; font-size: .8rem; }
+.auth-success { margin: 0 0 14px; color: #86efac !important; font-size: .8rem; }
 .role-selector { display: grid; grid-template-columns: 1fr 1fr; gap: 9px; margin: 18px 0; }
 .role-selector button { padding: 13px; border: 1px solid var(--border); border-radius: 13px; background: rgba(255,255,255,.045); cursor: pointer; }
 .role-selector button.active { border-color: var(--cyan); background: rgba(34,211,238,.13); color: #a5f3fc; }
@@ -678,4 +678,4 @@ input[type="range"] { display: block; width: 100%; margin-top: 8px; accent-color
     min-width: 360px;
   }
 }
-
+

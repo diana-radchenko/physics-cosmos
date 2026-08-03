@@ -48,3 +48,22 @@ export async function loginAccount({ email, password }) {
   const { passwordHash: _, ...profile } = account;
   return profile;
 }
+
+export async function resetAccountPassword({ email, role, schoolNumber, birthDate, subject, newPassword }) {
+  const accounts = readAccounts();
+  const normalizedEmail = email.trim().toLowerCase();
+  const accountIndex = accounts.findIndex((account) => account.email === normalizedEmail);
+  if (accountIndex < 0) throw new Error("ACCOUNT_NOT_FOUND");
+
+  const account = accounts[accountIndex];
+  const schoolMatches = account.schoolNumber.trim().toLowerCase() === schoolNumber.trim().toLowerCase();
+  const roleDetailsMatch = role === "student"
+    ? account.role === "student" && account.birthDate === birthDate
+    : account.role === "teacher" && account.subject.trim().toLowerCase() === subject.trim().toLowerCase();
+  if (!schoolMatches || !roleDetailsMatch) throw new Error("RECOVERY_DETAILS_MISMATCH");
+  if (newPassword.length < 8) throw new Error("PASSWORD_TOO_SHORT");
+
+  accounts[accountIndex] = { ...account, passwordHash: await passwordHash(newPassword) };
+  localStorage.setItem(ACCOUNTS_KEY, JSON.stringify(accounts));
+}
+
