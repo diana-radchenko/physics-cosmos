@@ -1,5 +1,11 @@
 import { useEffect, useState } from "react";
+import ReactMarkdown from "react-markdown";
+import remarkGfm from "remark-gfm";
+import remarkMath from "remark-math";
+import rehypeKatex from "rehype-katex";
+import "katex/dist/katex.min.css";
 import { text } from "../i18n.js";
+import { normalizeMathMarkdown } from "../utils/mathText.js";
 
 const starterArticles = [{ id: "welcome", titleRu: "Добро пожаловать в сообщество", titleEn: "Welcome to the community", bodyRu: "Здесь администратор публикует полезные материалы по физике, новости проекта и рекомендации для учеников и учителей.", bodyEn: "Here the site administrator publishes useful physics materials, project news, and recommendations for students and teachers.", author: "Physics Cosmos", createdAt: "2026-08-02T00:00:00.000Z" }];
 
@@ -27,7 +33,18 @@ export default function CommunityPage({ locale, username, onRequireLogin }) {
 
   return <section className="section page-section narrow-page">
     <div className="section-heading"><p className="eyebrow">{l("Знания сообщества", "Community knowledge")}</p><h1>{l("Статьи", "Articles")}</h1><p>{l("Материалы для учеников и учителей от администратора сайта.", "Materials for students and teachers from the site administrator.")}</p></div>
-    <div className="articles-list">{articles.map((article) => <article className="glass-panel story-panel" key={article.id}><div><p className="eyebrow">{new Date(article.createdAt).toLocaleDateString(locale === "en" ? "en-US" : "ru-RU")} · {article.author}</p><h2>{locale === "en" ? article.titleEn : article.titleRu}</h2><p>{locale === "en" ? article.bodyEn : article.bodyRu}</p></div></article>)}</div>
+    <div className="articles-list">{articles.map((article) => {
+      const body = locale === "en" ? article.bodyEn : article.bodyRu;
+      return <article className="glass-panel story-panel" key={article.id}>
+        <div>
+          <p className="eyebrow">{new Date(article.createdAt).toLocaleDateString(locale === "en" ? "en-US" : "ru-RU")} · {article.author}</p>
+          <h2>{locale === "en" ? article.titleEn : article.titleRu}</h2>
+          <div className="article-content">
+            <ReactMarkdown remarkPlugins={[remarkGfm, remarkMath]} rehypePlugins={[rehypeKatex]}>{normalizeMathMarkdown(body)}</ReactMarkdown>
+          </div>
+        </div>
+      </article>;
+    })}</div>
     <form className="glass-panel article-editor" onSubmit={publish}>
       <h2>{l("Публикация администратора", "Administrator publishing")}</h2>
       {!username && <div className="account-notice"><span>🔐</span><p>{l("Войдите, чтобы открыть форму публикации.", "Log in to open the publishing form.")}</p><button type="button" className="primary-button" onClick={onRequireLogin}>{l("Войти", "Log in")}</button></div>}
@@ -35,3 +52,4 @@ export default function CommunityPage({ locale, username, onRequireLogin }) {
     </form>
   </section>;
 }
+

@@ -1,4 +1,6 @@
 import { useState } from "react";
+import ReactMarkdown from "react-markdown";
+import remarkGfm from "remark-gfm";
 import { physicsTopics } from "../data/physics";
 import PhysicsCanvas from "../components/PhysicsCanvas";
 import { refractedAngle } from "../physics/calculations";
@@ -155,9 +157,7 @@ function TopicCard({ topic, open, onToggle, locale }) {
           <div className="theory-grid">
             <section className="glass-panel">
               <h3>📚 {l("Теория", "Theory")}</h3>
-              {topic.theory.split("\n\n").map((paragraph) => (
-                <p key={paragraph}>{paragraph}</p>
-              ))}
+              <div className="theory-copy"><ReactMarkdown remarkPlugins={[remarkGfm]}>{topic.theory}</ReactMarkdown></div>
             </section>
             <section className="formula-panel">
               <span>{l("Формула", "Formula")}</span>
