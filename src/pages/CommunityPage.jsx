@@ -9,6 +9,24 @@ import { normalizeMathMarkdown } from "../utils/mathText.js";
 
 const starterArticles = [{ id: "welcome", titleRu: "Добро пожаловать в сообщество", titleEn: "Welcome to the community", bodyRu: "Здесь администратор публикует полезные материалы по физике, новости проекта и рекомендации для учеников и учителей.", bodyEn: "Here the site administrator publishes useful physics materials, project news, and recommendations for students and teachers.", author: "Physics Cosmos", createdAt: "2026-08-02T00:00:00.000Z" }];
 const emojis = ["😊", "🚀", "🌍", "⚡", "🧲", "🔭", "🧪", "💡", "📚", "✅"];
+const transliteration = { А: "A", Б: "B", В: "V", Г: "G", Д: "D", Е: "E", Ё: "Yo", Ж: "Zh", З: "Z", И: "I", Й: "Y", К: "K", Л: "L", М: "M", Н: "N", О: "O", П: "P", Р: "R", С: "S", Т: "T", У: "U", Ф: "F", Х: "Kh", Ц: "Ts", Ч: "Ch", Ш: "Sh", Щ: "Shch", Ъ: "", Ы: "Y", Ь: "", Э: "E", Ю: "Yu", Я: "Ya" };
+
+function transliterateName(value) {
+  return String(value || "").split("").map((letter) => {
+    const upper = letter.toUpperCase();
+    const replacement = transliteration[upper];
+    if (replacement === undefined) return letter;
+    return letter === upper ? replacement : replacement.charAt(0).toLowerCase() + replacement.slice(1);
+  }).join("");
+}
+
+function displayAuthorName(value, locale) {
+  if (locale !== "en" || !/[А-ЯЁ]/i.test(value || "")) return value;
+  const parts = transliterateName(value).trim().split(/\s+/);
+  if (parts.length === 2) return `${parts[1]} ${parts[0]}`;
+  if (parts.length === 3) return `${parts[1]} ${parts[2]} ${parts[0]}`;
+  return parts.join(" ");
+}
 
 function safeArticleUrl(url) {
   if (/^data:image\/(?:png|jpe?g|gif|webp);base64,/i.test(url)) return url;
@@ -118,11 +136,13 @@ function readArticles() {
 
 export default function CommunityPage({ locale, username, onRequireLogin }) {
   const l = (ru, en) => text(locale, ru, en);
+  const editorRef = useRef(null);
   const [articles, setArticles] = useState(readArticles);
   const [titleRu, setTitleRu] = useState("");
   const [titleEn, setTitleEn] = useState("");
   const [bodyRu, setBodyRu] = useState("");
   const [bodyEn, setBodyEn] = useState("");
+  const [editingId, setEditingId] = useState(null);
   const [storageError, setStorageError] = useState(false);
   useEffect(() => {
     try { localStorage.setItem("physics-articles", JSON.stringify(articles)); setStorageError(false); }
@@ -133,17 +153,40 @@ export default function CommunityPage({ locale, username, onRequireLogin }) {
     event.preventDefault();
     if (!username) return onRequireLogin();
     if (![titleRu, titleEn, bodyRu, bodyEn].every((value) => value.trim())) return;
-    setArticles([{ id: crypto.randomUUID(), titleRu: titleRu.trim(), titleEn: titleEn.trim(), bodyRu: bodyRu.trim(), bodyEn: bodyEn.trim(), author: username, createdAt: new Date().toISOString() }, ...articles]);
-    setTitleRu(""); setTitleEn(""); setBodyRu(""); setBodyEn("");
+    const content = { titleRu: titleRu.trim(), titleEn: titleEn.trim(), bodyRu: bodyRu.trim(), bodyEn: bodyEn.trim() };
+    setArticles(editingId
+      ? articles.map((article) => article.id === editingId ? { ...article, ...content, updatedAt: new Date().toISOString() } : article)
+      : [{ id: crypto.randomUUID(), ...content, author: username, createdAt: new Date().toISOString() }, ...articles]);
+    setTitleRu(""); setTitleEn(""); setBodyRu(""); setBodyEn(""); setEditingId(null);
+  };
+
+  const editArticle = (article) => {
+    setEditingId(article.id);
+    setTitleRu(article.titleRu || "");
+    setTitleEn(article.titleEn || "");
+    setBodyRu(article.bodyRu || "");
+    setBodyEn(article.bodyEn || "");
+    requestAnimationFrame(() => editorRef.current?.scrollIntoView({ behavior: "smooth", block: "start" }));
+  };
+
+  const cancelEditing = () => {
+    setEditingId(null); setTitleRu(""); setTitleEn(""); setBodyRu(""); setBodyEn("");
   };
 
   return <section className="section page-section narrow-page">
-    <div className="section-heading"><p className="eyebrow">{l("Знания сообщества", "Community knowledge")}</p><h1>{l("Статьи", "Articles")}</h1><p>{l("Материалы для учеников и учителей от администратора сайта.", "Materials for students and teachers from the site administrator.")}</p></div>
+    <div className="section-heading"><p className="eyebrow">{l("Знания сообщества", "Community knowledge")}</p><h1>{l("Статьи", "Articles")}</h1><p>{l("Материалы для учеников и учителей от администратора сайта.", "Materials for students and teachers from the site administrator.")}</p>{username && <button className="primary-button article-create-button" onClick={() => { cancelEditing(); requestAnimationFrame(() => editorRef.current?.scrollIntoView({ behavior: "smooth", block: "start" })); }}>✨ {l("Создать статью с AI", "Create an article with AI")}</button>}</div>
+    <form ref={editorRef} className="glass-panel article-editor" onSubmit={publish}>
+      <h2>{editingId ? l("Редактирование статьи с AI", "Edit the article with AI") : l("Публикация с AI-помощником", "Publish with AI assistance")}</h2>
+      <p className="article-editor-intro">{l("Напишите черновик, затем нажмите «Форматировать с AI». Результат останется в редакторе — его можно проверить и изменить перед публикацией.", "Write a draft, then select “Format with AI”. The result stays in the editor so you can review and change it before publishing.")}</p>
+      {storageError && <p className="auth-error">{l("Изображения занимают слишком много места. Уменьшите их количество или размер.", "The images use too much storage. Reduce their number or size.")}</p>}
+      {!username && <div className="account-notice"><span>🔐</span><p>{l("Войдите, чтобы открыть AI-редактор и форму публикации.", "Log in to open the AI editor and publishing form.")}</p><button type="button" className="primary-button" onClick={onRequireLogin}>{l("Войти", "Log in")}</button></div>}
+      {username && <><label>{l("Заголовок на русском", "Russian title")}<input value={titleRu} onChange={(e) => setTitleRu(e.target.value)} required /></label><label>{l("Заголовок на английском", "English title")}<input value={titleEn} onChange={(e) => setTitleEn(e.target.value)} required /></label><ArticleTextEditor label={l("Текст на русском", "Russian text")} value={bodyRu} onChange={setBodyRu} locale={locale} contentLocale="ru" /><ArticleTextEditor label={l("Текст на английском", "English text")} value={bodyEn} onChange={setBodyEn} locale={locale} contentLocale="en" /><div className="article-editor-actions"><button className="primary-button">{editingId ? l("Сохранить изменения", "Save changes") : l("Опубликовать", "Publish")}</button>{editingId && <button type="button" className="ghost-button" onClick={cancelEditing}>{l("Отменить", "Cancel")}</button>}</div></>}
+    </form>
     <div className="articles-list">{articles.map((article) => {
       const body = locale === "en" ? article.bodyEn : article.bodyRu;
       return <article className="glass-panel story-panel" key={article.id}>
         <div>
-          <p className="eyebrow">{new Date(article.createdAt).toLocaleDateString(locale === "en" ? "en-US" : "ru-RU")} · {article.author}</p>
+          <div className="article-meta"><p className="eyebrow">{new Date(article.createdAt).toLocaleDateString(locale === "en" ? "en-US" : "ru-RU")} · {displayAuthorName(article.author, locale)}</p>{username && <button className="article-edit-button" type="button" onClick={() => editArticle(article)}>✨ {l("Редактировать с AI", "Edit with AI")}</button>}</div>
           <h2>{locale === "en" ? article.titleEn : article.titleRu}</h2>
           <div className="article-content">
             <ReactMarkdown remarkPlugins={[remarkGfm, remarkMath]} rehypePlugins={[rehypeKatex]} urlTransform={safeArticleUrl} components={{ code: ColorCode, img: ({ node: _node, ...props }) => <img {...props} loading="lazy" /> }}>{normalizeMathMarkdown(body)}</ReactMarkdown>
@@ -151,12 +194,6 @@ export default function CommunityPage({ locale, username, onRequireLogin }) {
         </div>
       </article>;
     })}</div>
-    <form className="glass-panel article-editor" onSubmit={publish}>
-      <h2>{l("Публикация администратора", "Administrator publishing")}</h2>
-      {storageError && <p className="auth-error">{l("Изображения занимают слишком много места. Уменьшите их количество или размер.", "The images use too much storage. Reduce their number or size.")}</p>}
-      {!username && <div className="account-notice"><span>🔐</span><p>{l("Войдите, чтобы открыть форму публикации.", "Log in to open the publishing form.")}</p><button type="button" className="primary-button" onClick={onRequireLogin}>{l("Войти", "Log in")}</button></div>}
-      {username && <><label>{l("Заголовок на русском", "Russian title")}<input value={titleRu} onChange={(e) => setTitleRu(e.target.value)} required /></label><label>{l("Заголовок на английском", "English title")}<input value={titleEn} onChange={(e) => setTitleEn(e.target.value)} required /></label><ArticleTextEditor label={l("Текст на русском", "Russian text")} value={bodyRu} onChange={setBodyRu} locale={locale} contentLocale="ru" /><ArticleTextEditor label={l("Текст на английском", "English text")} value={bodyEn} onChange={setBodyEn} locale={locale} contentLocale="en" /><button className="primary-button">{l("Опубликовать", "Publish")}</button></>}
-    </form>
   </section>;
 }
 
