@@ -100,3 +100,39 @@ export async function requestPhysicsAnswer({
 
   return answer;
 }
+
+export async function requestArticleFormatting({
+  apiKey,
+  model = "gpt-4o-mini",
+  text,
+  locale = "ru",
+}) {
+  const responseLocale = locale === "en" ? "en" : "ru";
+  if (!apiKey) {
+    throw new Error(responseLocale === "en" ? "OPENAI_API_KEY was not found." : "OPENAI_API_KEY не найден.");
+  }
+  const cleanText = String(text || "").trim().slice(0, 12000);
+  if (!cleanText) {
+    throw new Error(responseLocale === "en" ? "Enter the article text first." : "Сначала введите текст статьи.");
+  }
+  const language = responseLocale === "en" ? "English" : "Russian";
+  const client = new OpenAI({ apiKey });
+  const response = await client.chat.completions.create({
+    model,
+    messages: [
+      {
+        role: "system",
+        content: `You are an educational article editor. Format the supplied article in ${language}. Return only the revised article, without commentary or code fences. Preserve every factual claim, number, formula, meaning, and the original language; do not invent or remove information. Improve readability with short paragraphs, descriptive Markdown headings, lists where useful, and selective **bold emphasis**. Preserve every ARTICLE_IMAGE_n placeholder exactly and on its own line. Preserve custom color spans written as inline code in the exact form \`color:#RRGGBB|text\`. Format mathematical expressions with $...$ or $$...$$ when appropriate.`,
+      },
+      { role: "user", content: cleanText },
+    ],
+    temperature: 0.1,
+    max_tokens: 2400,
+  });
+  const answer = response.choices?.[0]?.message?.content?.trim();
+  if (!answer) {
+    throw new Error(responseLocale === "en" ? "The AI returned no formatted text." : "AI не вернул отформатированный текст.");
+  }
+  return answer;
+}
+

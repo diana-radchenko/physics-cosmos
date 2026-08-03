@@ -1,4 +1,4 @@
-import { requestPhysicsAnswer } from "../../server/openai.js";
+import { requestArticleFormatting, requestPhysicsAnswer } from "../../server/openai.js";
 
 function json(data, status = 200) {
   return new Response(JSON.stringify(data), {
@@ -16,6 +16,16 @@ export async function onRequestPost({ request, env }) {
 
     const messages = Array.isArray(body.messages) ? body.messages : [];
     const locale = body.locale === "en" ? "en" : "ru";
+
+    if (body.mode === "article-format") {
+      const answer = await requestArticleFormatting({
+        apiKey: env.OPENAI_API_KEY,
+        model: env.OPENAI_MODEL || "gpt-4o-mini",
+        text: body.text,
+        locale,
+      });
+      return json({ answer });
+    }
 
     if (messages.length > 30) {
       return json({ error: locale === "en" ? "The conversation history is too long." : "Слишком длинная история диалога." }, 400);
@@ -49,3 +59,4 @@ export function onRequest() {
     405
   );
 }
+
